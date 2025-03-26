@@ -1,0 +1,42 @@
+{
+  "tasks": {
+    "serve": "deno run --allow-net --allow-env index.ts"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true
+  },
+  "imports": {
+    "std/": "https://deno.land/std@0.208.0/",
+    "stripe": "https://esm.sh/stripe@13.10.0?target=deno"
+  },
+  "lint": {
+    "files": {
+      "include": ["*.ts"]
+    },
+    "rules": {
+      "tags": ["recommended"]
+    }
+  },
+  "fmt": {
+    "files": {
+      "include": ["*.ts"]
+    },
+    "options": {
+      "useTabs": false,
+      "lineWidth": 100,
+      "indentWidth": 2,
+      "singleQuote": true
+    }
+  }
+}

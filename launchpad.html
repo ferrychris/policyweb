@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Strategy Launchpad - WhitegloveAI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="antialiased bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="flex flex-col items-start">
+                            <span class="text-xl font-bold gradient-text">WhitegloveAI</span>
+                            <span class="text-sm font-light text-gray-700">Policy Generator</span>
+                        </div>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="index.html" id="nav-home" class="border-transparent text-gray-700 hover:text-indigo-600 hover:border-indigo-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Home
+                        </a>
+                        <a href="templates.html" id="nav-templates" class="border-transparent text-gray-700 hover:text-indigo-600 hover:border-indigo-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Templates
+                        </a>
+                        <a href="framework.html" id="nav-framework" class="border-transparent text-gray-700 hover:text-indigo-600 hover:border-indigo-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Framework
+                        </a>
+                        <a href="testimonials.html" id="nav-testimonials" class="border-transparent text-gray-700 hover:text-indigo-600 hover:border-indigo-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Testimonials
+                        </a>
+                        <a href="pricing.html" id="nav-pricing" class="border-transparent text-gray-700 hover:text-indigo-600 hover:border-indigo-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Pricing
+                        </a>
+                        <a href="launchpad.html" id="nav-launchpad" class="border-indigo-500 text-indigo-600 border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium">
+                            AI Launchpad
+                        </a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <a href="#" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600" onclick="toggleDarkMode()">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                    <a href="generator.html" class="ml-3 px-4 py-2 text-sm font-medium rounded-md text-white gradient-bg hover:opacity-90">
+                        Get Started
+                    </a>
+                </div>
+                <div class="-mr-2 flex items-center sm:hidden">
+                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" onclick="toggleMobileMenu()">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu, show/hide based on menu state -->
+        <div class="sm:hidden hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="index.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Home</a>
+                <a href="templates.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Templates</a>
+                <a href="framework.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Framework</a>
+                <a href="testimonials.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Testimonials</a>
+                <a href="pricing.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Pricing</a>
+                <a href="launchpad.html" class="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">AI Launchpad</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <div class="relative bg-gradient-to-r from-blue-600 to-indigo-700">
+            <div class="absolute inset-0">
+                <div class="absolute inset-y-0 left-0 w-1/2 bg-blue-600"></div>
+            </div>
+            <div class="relative max-w-7xl mx-auto lg:grid lg:grid-cols-5">
+                <div class="lg:col-span-3 py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+                    <div class="text-center lg:text-left">
+                        <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                            AI Strategy Launchpad
+                        </h1>
+                        <p class="mt-6 text-xl text-indigo-100 max-w-3xl">
+                            Accelerate your AI journey with a strategic roadmap tailored to your organization's unique needs and goals.
+                        </p>
+                        <div class="mt-10 max-w-sm mx-auto lg:mx-0">
+                            <div class="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-1 sm:gap-5">
+                                <a href="#signup" class="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-indigo-700 bg-white hover:bg-indigo-50">
+                                    Get Started 
+                                    <i class="fas fa-arrow-right ml-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 lg:relative">
+                    <div class="hidden lg:block h-full">
+                        <img class="absolute inset-0 h-full w-full object-cover" src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" alt="People working on a strategic plan">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="py-12 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-base text-indigo-600 font-semibold tracking-wide uppercase">Our Approach</h2>
+                    <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                        A Strategic Framework for AI Success
+                    </p>
+                    <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+                        Our AI Strategy Launchpad provides a structured approach to help organizations build a robust AI strategy aligned with their business objectives.
+                    </p>
+                </div>
+
+                <div class="mt-16">
+                    <div class="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10">
+                        <div class="relative">
+                            <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
+                                <i class="fas fa-search text-xl"></i>
+                            </div>
+                            <div class="ml-16">
+                                <h3 class="text-lg font-medium text-gray-900">1. Assessment & Discovery</h3>
+                                <p class="mt-2 text-base text-gray-500">
+                                    We evaluate your organization's AI readiness across people, processes, data, and technology dimensions. Through stakeholder interviews and data analysis, we identify your unique challenges and opportunities.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="relative">
+                            <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
+                                <i class="fas fa-bullseye text-xl"></i>
+                            </div>
+                            <div class="ml-16">
+                                <h3 class="text-lg font-medium text-gray-900">2. Vision & Alignment</h3>
+                                <p class="mt-2 text-base text-gray-500">
+                                    Through facilitated workshops, we help you articulate an AI vision that aligns with your strategic business goals. This ensures executive buy-in and cross-functional alignment.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="relative">
+                            <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
+                                <i class="fas fa-map text-xl"></i>
+                            </div>
+                            <div class="ml-16">
+                                <h3 class="text-lg font-medium text-gray-900">3. Opportunity Mapping</h3>
+                                <p class="mt-2 text-base text-gray-500">
+                                    We identify high-impact AI use cases through a structured evaluation framework, prioritizing them based on business value, technical feasibility, and implementation complexity.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="relative">
+                            <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
+                                <i class="fas fa-cogs text-xl"></i>
+                            </div>
+                            <div class="ml-16">
+                                <h3 class="text-lg font-medium text-gray-900">4. Implementation Planning</h3>
+                                <p class="mt-2 text-base text-gray-500">
+                                    We develop a practical implementation roadmap with clear milestones, required resources, and governance recommendations to execute your AI strategy effectively.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Section -->
+        <div class="py-16 bg-gray-50 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-base text-indigo-600 font-semibold tracking-wide uppercase">Engagement Timeline</h2>
+                    <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                        AI Strategy in 4 Weeks
+                    </p>
+                    <p class="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
+                        Our structured process delivers a comprehensive AI strategy in just four weeks.
+                    </p>
+                </div>
+
+                <div class="mt-16">
+                    <div class="relative">
+                        <!-- Timeline line -->
+                        <div class="hidden md:block absolute top-0 bottom-0 left-1/2 w-0.5 bg-gray-200"></div>
+
+                        <!-- Week 1 -->
+                        <div class="relative md:flex">
+                            <div class="md:w-1/2 md:pr-8 md:text-right">
+                                <div class="md:float-right bg-white p-6 rounded-lg shadow-md mb-10 max-w-md">
+                                    <h3 class="text-lg font-medium text-indigo-600">Week 1: Assessment</h3>
+                                    <p class="mt-2 text-gray-600">
+                                        • Initial stakeholder interviews<br>
+                                        • AI maturity assessment<br>
+                                        • Data infrastructure review<br>
+                                        • Competitive landscape analysis
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="hidden md:flex md:items-center md:justify-center">
+                                <div class="h-8 w-8 rounded-full border-4 border-indigo-500 bg-white"></div>
+                            </div>
+                            <div class="md:w-1/2 md:pl-8"></div>
+                        </div>
+
+                        <!-- Week 2 -->
+                        <div class="relative md:flex">
+                            <div class="md:w-1/2 md:pr-8"></div>
+                            <div class="hidden md:flex md:items-center md:justify-center">
+                                <div class="h-8 w-8 rounded-full border-4 border-indigo-500 bg-white"></div>
+                            </div>
+                            <div class="md:w-1/2 md:pl-8 md:text-left">
+                                <div class="bg-white p-6 rounded-lg shadow-md mb-10 max-w-md">
+                                    <h3 class="text-lg font-medium text-indigo-600">Week 2: Opportunity Workshop</h3>
+                                    <p class="mt-2 text-gray-600">
+                                        • Half-day facilitated workshop<br>
+                                        • Business goal alignment<br>
+                                        • AI use case brainstorming<br>
+                                        • Initial prioritization exercise
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Week 3 -->
+                        <div class="relative md:flex">
+                            <div class="md:w-1/2 md:pr-8 md:text-right">
+                                <div class="md:float-right bg-white p-6 rounded-lg shadow-md mb-10 max-w-md">
+                                    <h3 class="text-lg font-medium text-indigo-600">Week 3: Strategy Development</h3>
+                                    <p class="mt-2 text-gray-600">
+                                        • Detailed use case analysis<br>
+                                        • Resource requirement planning<br>
+                                        • Governance framework development<br>
+                                        • ROI and impact projections
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="hidden md:flex md:items-center md:justify-center">
+                                <div class="h-8 w-8 rounded-full border-4 border-indigo-500 bg-white"></div>
+                            </div>
+                            <div class="md:w-1/2 md:pl-8"></div>
+                        </div>
+
+                        <!-- Week 4 -->
+                        <div class="relative md:flex">
+                            <div class="md:w-1/2 md:pr-8"></div>
+                            <div class="hidden md:flex md:items-center md:justify-center">
+                                <div class="h-8 w-8 rounded-full border-4 border-indigo-500 bg-white"></div>
+                            </div>
+                            <div class="md:w-1/2 md:pl-8 md:text-left">
+                                <div class="bg-white p-6 rounded-lg shadow-md mb-10 max-w-md">
+                                    <h3 class="text-lg font-medium text-indigo-600">Week 4: Finalization & Presentation</h3>
+                                    <p class="mt-2 text-gray-600">
+                                        • Comprehensive AI strategy document<br>
+                                        • Implementation roadmap with timelines<br>
+                                        • Budget and resource recommendations<br>
+                                        • Executive presentation
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deliverables Section -->
+        <div class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-base text-indigo-600 font-semibold tracking-wide uppercase">Deliverables</h2>
+                    <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                        What You'll Receive
+                    </p>
+                    <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+                        Our AI Strategy Launchpad engagement provides concrete deliverables to guide your AI implementation.
+                    </p>
+                </div>
+
+                <div class="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="pt-6">
+                        <div class="flow-root bg-gray-50 rounded-lg px-6 pb-8">
+                            <div class="-mt-6">
+                                <div>
+                                    <span class="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                                        <i class="fas fa-file-alt text-white text-xl"></i>
+                                    </span>
+                                </div>
+                                <h3 class="mt-8 text-lg font-medium text-gray-900 tracking-tight">AI Strategy Document</h3>
+                                <p class="mt-5 text-base text-gray-500">
+                                    A comprehensive document outlining your organization's AI vision, strategic goals, and execution framework.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <div class="flow-root bg-gray-50 rounded-lg px-6 pb-8">
+                            <div class="-mt-6">
+                                <div>
+                                    <span class="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                                        <i class="fas fa-project-diagram text-white text-xl"></i>
+                                    </span>
+                                </div>
+                                <h3 class="mt-8 text-lg font-medium text-gray-900 tracking-tight">Prioritized Use Case Portfolio</h3>
+                                <p class="mt-5 text-base text-gray-500">
+                                    A portfolio of high-impact AI use cases, prioritized based on business value, feasibility, and alignment with strategic goals.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <div class="flow-root bg-gray-50 rounded-lg px-6 pb-8">
+                            <div class="-mt-6">
+                                <div>
+                                    <span class="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                                        <i class="fas fa-road text-white text-xl"></i>
+                                    </span>
+                                </div>
+                                <h3 class="mt-8 text-lg font-medium text-gray-900 tracking-tight">Implementation Roadmap</h3>
+                                <p class="mt-5 text-base text-gray-500">
+                                    A detailed implementation plan with clear milestones, timelines, resource requirements, and success metrics.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <div class="flow-root bg-gray-50 rounded-lg px-6 pb-8">
+                            <div class="-mt-6">
+                                <div>
+                                    <span class="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                                        <i class="fas fa-sitemap text-white text-xl"></i>
+                                    </span>
+                                </div>
+                                <h3 class="mt-8 text-lg font-medium text-gray-900 tracking-tight">Governance Framework</h3>
+                                <p class="mt-5 text-base text-gray-500">
+                                    A governance structure and set of policies to manage AI risks and ensure responsible AI deployment.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <div class="flow-root bg-gray-50 rounded-lg px-6 pb-8">
+                            <div class="-mt-6">
+                                <div>
+                                    <span class="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                                        <i class="fas fa-users-cog text-white text-xl"></i>
+                                    </span>
+                                </div>
+                                <h3 class="mt-8 text-lg font-medium text-gray-900 tracking-tight">Team & Skill Assessment</h3>
+                                <p class="mt-5 text-base text-gray-500">
+                                    An analysis of your current talent pool and recommendations for building the necessary AI capabilities.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <div class="flow-root bg-gray-50 rounded-lg px-6 pb-8">
+                            <div class="-mt-6">
+                                <div>
+                                    <span class="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                                        <i class="fas fa-chart-line text-white text-xl"></i>
+                                    </span>
+                                </div>
+                                <h3 class="mt-8 text-lg font-medium text-gray-900 tracking-tight">ROI & Impact Analysis</h3>
+                                <p class="mt-5 text-base text-gray-500">
+                                    A detailed analysis of expected return on investment and business impact for prioritized AI initiatives.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div id="signup" class="bg-indigo-700">
+            <div class="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-extrabold text-white sm:text-4xl">
+                    <span class="block">Ready to launch your AI strategy?</span>
+                </h2>
+                <p class="mt-4 text-lg leading-6 text-indigo-200">
+                    Get started with our AI Strategy Launchpad engagement for $3,500.
+                </p>
+                <div class="mt-8 flex justify-center">
+                    <div class="inline-flex rounded-md shadow">
+                        <a href="generator.html" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50">
+                            Begin Your AI Strategy Journey
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <div class="ml-3 inline-flex">
+                        <a href="#" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-500 bg-opacity-60 hover:bg-opacity-70">
+                            Contact Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white">
+        <div class="max-w-7xl mx-auto py-12 px-4 overflow-hidden sm:px-6 lg:px-8">
+            <nav class="-mx-5 -my-2 flex flex-wrap justify-center" aria-label="Footer">
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-500 hover:text-gray-900">About</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-500 hover:text-gray-900">Blog</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-500 hover:text-gray-900">Jobs</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-500 hover:text-gray-900">Press</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-500 hover:text-gray-900">Accessibility</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-500 hover:text-gray-900">Partners</a>
+                </div>
+            </nav>
+            <div class="mt-8 flex justify-center space-x-6">
+                <a href="#" class="text-gray-400 hover:text-gray-500">
+                    <span class="sr-only">Facebook</span>
+                    <i class="fab fa-facebook text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-gray-500">
+                    <span class="sr-only">Instagram</span>
+                    <i class="fab fa-instagram text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-gray-500">
+                    <span class="sr-only">Twitter</span>
+                    <i class="fab fa-twitter text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-gray-500">
+                    <span class="sr-only">LinkedIn</span>
+                    <i class="fab fa-linkedin text-xl"></i>
+                </a>
+            </div>
+            <p class="mt-8 text-center text-base text-gray-400">
+                &copy; 2025 WhitegloveAI, Inc. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

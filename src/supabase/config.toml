@@ -1,0 +1,3 @@
+[functions]
+[functions.process-payment]
+verify_jwt = true

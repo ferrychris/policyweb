@@ -1,0 +1,15 @@
+{
+  "imports": {
+    "http/": "https://deno.land/std@0.168.0/http/",
+    "stripe": "https://esm.sh/stripe@12.8.0?target=deno&deno-types=npm:@types/stripe@12.0.0"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window", "deno.unstable"],
+    "strict": true
+  },
+  "tasks": {
+    "start": "deno run --allow-net --allow-env index.ts",
+    "deploy": "supabase functions deploy stripe-payment"
+  }
+}

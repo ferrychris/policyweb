@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testimonials - AI Policy Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="antialiased bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="flex flex-col items-start">
+                            <span class="text-xl font-bold gradient-text">WhitegloveAI</span>
+                            <span class="text-sm font-light text-gray-700">Policy Generator</span>
+                        </div>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="index.html" id="nav-home" class="border-transparent text-gray-700 hover:text-indigo-600 hover:border-indigo-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Home
+                        </a>
+                        <a href="templates.html" id="nav-templates" class="border-transparent text-gray-700 hover:text-indigo-600 hover:border-indigo-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Templates
+                        </a>
+                        <a href="framework.html" id="nav-framework" class="border-transparent text-gray-700 hover:text-indigo-600 hover:border-indigo-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Framework
+                        </a>
+                        <a href="testimonials.html" id="nav-testimonials" class="border-indigo-500 text-indigo-600 border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium">
+                            Testimonials
+                        </a>
+                        <a href="pricing.html" id="nav-pricing" class="border-transparent text-gray-700 hover:text-indigo-600 hover:border-indigo-500 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Pricing
+                        </a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <a href="#" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600" onclick="toggleDarkMode()">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                    <a href="#" onclick="initiateCheckout('basic_plan')" class="ml-3 px-4 py-2 text-sm font-medium rounded-md text-white gradient-bg hover:opacity-90">
+                        Get Started
+                    </a>
+                </div>
+                <div class="-mr-2 flex items-center sm:hidden">
+                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" onclick="toggleMobileMenu()">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu, show/hide based on menu state -->
+        <div class="sm:hidden hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="index.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Home</a>
+                <a href="templates.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Templates</a>
+                <a href="framework.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Framework</a>
+                <a href="testimonials.html" class="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Testimonials</a>
+                <a href="pricing.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Pricing</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Testimonials Section -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Client Testimonials</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">See what our clients are saying about our policy solutions.</p>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Testimonial 1 -->
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex items-center mb-4">
+                            <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-building text-indigo-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-gray-900">Sarah Johnson</h4>
+                                <p class="text-sm text-gray-500">CTO, TechInnovate Inc.</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">"The AI Policy Generator saved us countless hours of research and drafting. The policies were comprehensive and easy to customize for our specific needs. We were able to establish our AI governance framework in a fraction of the time it would have taken us otherwise."</p>
+                        <div class="mt-2">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 2 -->
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex items-center mb-4">
+                            <div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-hospital text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-gray-900">Dr. Michael Chen</h4>
+                                <p class="text-sm text-gray-500">Healthcare AI Director, MediTech Solutions</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">"As a healthcare organization, we needed policies that addressed the unique regulatory requirements of our industry. The Premium Suite provided us with exactly what we needed, including healthcare-specific considerations for AI ethics and data governance. The consultation was invaluable."</p>
+                        <div class="mt-2">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 3 -->
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex items-center mb-4">
+                            <div class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-university text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-gray-900">Jennifer Miller</h4>
+                                <p class="text-sm text-gray-500">Director of Innovation, National University</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">"The AI Policy Generator provided our university with a solid foundation for responsible AI use across academic departments. The educational discount was greatly appreciated, and the policies were easily adaptable to our academic setting. Excellent resource!"</p>
+                        <div class="mt-2">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 4 -->
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex items-center mb-4">
+                            <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-briefcase text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-gray-900">Robert Patel</h4>
+                                <p class="text-sm text-gray-500">Compliance Officer, Global Financial Group</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">"The financial sector has strict regulatory requirements, and we were impressed by how well the AI Policy Generator addressed our compliance needs. The risk management and data governance policies were particularly valuable. The service was well worth the investment."</p>
+                        <div class="mt-2">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Frequently Asked Questions</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Common questions about our pricing and services.</p>
+            </div>
+            <div class="border-t border-gray-200">
+                <dl>
+                    <!-- FAQ Item 1 -->
+                    <div class="faq-item border-b border-gray-200">
+                        <dt class="px-4 py-4 sm:px-6">
+                            <button class="w-full flex justify-between items-center text-left focus:outline-none" onclick="toggleFAQ(this)">
+                                <span class="text-sm font-medium text-gray-900">What's included in the policy packages?</span>
+                                <span class="faq-toggle-icon ml-4">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </span>
+                            </button>
+                        </dt>
+                        <dd class="faq-content px-4 pb-5 sm:px-6 hidden">
+                            <p class="text-sm text-gray-500">Each policy package includes professionally written AI governance policy templates that you can customize for your organization. The policies are delivered in editable formats (Word and PDF), and include support for implementation questions.</p>
+                        </dd>
+                    </div>
+                    
+                    <!-- FAQ Item 2 -->
+                    <div class="faq-item border-b border-gray-200">
+                        <dt class="px-4 py-4 sm:px-6">
+                            <button class="w-full flex justify-between items-center text-left focus:outline-none" onclick="toggleFAQ(this)">
+                                <span class="text-sm font-medium text-gray-900">Do you offer discounts for nonprofits or educational institutions?</span>
+                                <span class="faq-toggle-icon ml-4">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </span>
+                            </button>
+                        </dt>
+                        <dd class="faq-content px-4 pb-5 sm:px-6 hidden">
+                            <p class="text-sm text-gray-500">Yes, we offer a 25% discount for verified nonprofit organizations and educational institutions. Please contact our sales team to learn more about our special pricing for these organizations.</p>
+                        </dd>
+                    </div>
+                    
+                    <!-- FAQ Item 3 -->
+                    <div class="faq-item border-b border-gray-200">
+                        <dt class="px-4 py-4 sm:px-6">
+                            <button class="w-full flex justify-between items-center text-left focus:outline-none" onclick="toggleFAQ(this)">
+                                <span class="text-sm font-medium text-gray-900">What payment methods do you accept?</span>
+                                <span class="faq-toggle-icon ml-4">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </span>
+                            </button>
+                        </dt>
+                        <dd class="faq-content px-4 pb-5 sm:px-6 hidden">
+                            <p class="text-sm text-gray-500">We accept all major credit cards through our secure Stripe payment processor. For Enterprise packages, we can also accommodate purchase orders and other payment arrangements.</p>
+                        </dd>
+                    </div>
+                    
+                    <!-- FAQ Item 4 -->
+                    <div class="faq-item border-b border-gray-200">
+                        <dt class="px-4 py-4 sm:px-6">
+                            <button class="w-full flex justify-between items-center text-left focus:outline-none" onclick="toggleFAQ(this)">
+                                <span class="text-sm font-medium text-gray-900">Can I see what the policies look like before purchasing?</span>
+                                <span class="faq-toggle-icon ml-4">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </span>
+                            </button>
+                        </dt>
+                        <dd class="faq-content px-4 pb-5 sm:px-6 hidden">
+                            <p class="text-sm text-gray-500">Our website provides detailed descriptions of each policy offering. For specific policy format questions, please contact our sales team who can provide more information about the policy structure and content before purchase.</p>
+                        </dd>
+                    </div>
+                    
+                    <!-- FAQ Item 5 -->
+                    <div class="faq-item border-b border-gray-200">
+                        <dt class="px-4 py-4 sm:px-6">
+                            <button class="w-full flex justify-between items-center text-left focus:outline-none" onclick="toggleFAQ(this)">
+                                <span class="text-sm font-medium text-gray-900">How long does it take to receive my policies after purchase?</span>
+                                <span class="faq-toggle-icon ml-4">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </span>
+                            </button>
+                        </dt>
+                        <dd class="faq-content px-4 pb-5 sm:px-6 hidden">
+                            <p class="text-sm text-gray-500">After completing the questionnaire and submitting your purchase, you'll receive your customized policies within 2-3 business days. For the Premium package with consultation services, the timeline may vary based on scheduling the consultation session.</p>
+                        </dd>
+                    </div>
+                    
+                    <!-- FAQ Item 6 -->
+                    <div class="faq-item border-b border-gray-200">
+                        <dt class="px-4 py-4 sm:px-6">
+                            <button class="w-full flex justify-between items-center text-left focus:outline-none" onclick="toggleFAQ(this)">
+                                <span class="text-sm font-medium text-gray-900">Are your policies compliant with international regulations?</span>
+                                <span class="faq-toggle-icon ml-4">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </span>
+                            </button>
+                        </dt>
+                        <dd class="faq-content px-4 pb-5 sm:px-6 hidden">
+                            <p class="text-sm text-gray-500">Our policies are designed with consideration for major AI regulations and frameworks globally, including the EU AI Act, NIST AI Risk Management Framework, and other established governance standards. However, we recommend consulting with a legal professional familiar with your specific jurisdiction to ensure complete compliance with local regulations.</p>
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-12">
+        <div class="max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8">
+            <p class="mt-8 text-center text-base text-gray-400">
+                &copy; 2025 AI Policy Generator. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Toggle FAQ sections
+        function toggleFAQ(button) {
+            const content = button.parentElement.nextElementSibling;
+            content.classList.toggle('hidden');
+            
+            // Toggle icon
+            const icon = button.querySelector('.faq-toggle-icon i');
+            if (content.classList.contains('hidden')) {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        }
+    </script>
+</body>
+</html>
