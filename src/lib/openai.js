@@ -3,7 +3,7 @@ import { getUserPackage } from './database';
 
 // Configuration
 const OPENAI_CONFIG = {
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true,
   maxRetries: 3,
   defaultModel: 'gpt-4',
@@ -23,10 +23,10 @@ const OPENAI_CONFIG = {
 const validateEnvironment = () => {
   const apiKey = OPENAI_CONFIG.apiKey;
   if (!apiKey) {
-    throw new Error('OpenAI API key is not configured. Please check your environment variables.');
+    throw new Error('OpenAI API key is not configured. Please set the VITE_OPENAI_API_KEY environment variable.');
   }
-  if (apiKey === 'your_openai_api_key_here') {
-    throw new Error('Invalid OpenAI API key. Please update your environment variables with a valid API key.');
+  if (apiKey.startsWith('your_') || apiKey.length < 20) {
+    throw new Error('Invalid OpenAI API key format. Please check your VITE_OPENAI_API_KEY environment variable.');
   }
   console.log('OpenAI configuration loaded successfully');
 };
