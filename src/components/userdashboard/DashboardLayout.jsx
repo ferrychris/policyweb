@@ -3,6 +3,8 @@ import { Link, useLocation, Outlet } from 'react-router-dom';
 import { Sun, Moon, Home, Package, User, CreditCard, FileText, LogOut, Menu, X } from 'lucide-react';
 import { getUserSubscription, getCurrentUser } from '../../lib/userService';
 import { getPackagesFromDatabase } from '../../lib/policySettings';
+import logo from '../landing/image/policylogo.png';
+import { cn } from '../../lib/utils';
 
 const DashboardLayout = () => {
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
@@ -101,7 +103,7 @@ const DashboardLayout = () => {
   const user = getCurrentUser();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -112,40 +114,36 @@ const DashboardLayout = () => {
       )}
 
       {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 bottom-0 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out z-20 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-          }`}
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-200 ease-in-out",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          "md:translate-x-0"
+        )}
       >
         <div className="flex flex-col h-full">
-          {/* Sidebar header */}
-          <div className="flex items-center justify-between px-4 py-5 border-b border-gray-200 dark:border-gray-700">
-            <Link to="/dashboard" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-md flex items-center justify-center text-white font-bold">
-                FP
-              </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-gray-100">FinePolicy</span>
+          {/* Logo */}
+          <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+            <Link to="/dashboard" className="flex items-center">
+              <img src={logo} alt="FinePolicy Logo" className="h-8 w-auto" />
             </Link>
-            <button
-              onClick={toggleSidebar}
-              className="p-1 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none lg:hidden"
-            >
-              <X className="w-6 h-6" />
-            </button>
           </div>
 
-          {/* Sidebar navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+          {/* Navigation */}
+          <nav className="flex-1 px-2 py-4 space-y-1">
             {menuItems.map((item) => (
               <Link
-                key={item.path}
+                key={item.label}
                 to={item.path}
-                className={`flex items-center px-4 py-3 rounded-md transition-colors ${(item.exact ? location.pathname === item.path : location.pathname.startsWith(item.path))
-                  ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
+                className={cn(
+                  "flex items-center px-4 py-2 text-sm font-medium rounded-md",
+                  location.pathname === item.path
+                    ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                )}
               >
-                <span className="mr-3">{item.icon}</span>
-                <span>{item.label}</span>
+                {item.icon}
+                <span className="ml-3">{item.label}</span>
               </Link>
             ))}
           </nav>
@@ -162,7 +160,7 @@ const DashboardLayout = () => {
 
             <button
               onClick={toggleDarkMode}
-              className="flex items-center w-full px-2 py-3 mt-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center w-full px-2 py-3 mt-2 rounded-lg text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               {darkMode ? (
                 <Sun className="w-5 h-5" />
@@ -176,14 +174,14 @@ const DashboardLayout = () => {
 
             <Link
               to="/login"
-              className="flex items-center w-full px-2 py-3 mt-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center w-full px-2 py-3 mt-2 rounded-lg text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <LogOut className="w-5 h-5" />
               <span className="ml-3 font-medium">Log Out</span>
             </Link>
           </div>
         </div>
-      </aside>
+      </div>
 
       {/* Main content */}
       <div className="lg:pl-64">
@@ -192,7 +190,7 @@ const DashboardLayout = () => {
           <div className="flex items-center justify-between px-4 py-4">
             <button
               onClick={toggleSidebar}
-              className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 lg:hidden"
+              className="p-2 rounded-md text-white hover:text-white dark:hover:text-white lg:hidden"
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -200,7 +198,7 @@ const DashboardLayout = () => {
             <div className="ml-auto flex items-center">
               {subscription && (
                 <div className="mr-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${subscription.packageKey === 'premium'
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${subscription.packageKey === 'premium'
                     ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
                     : subscription.packageKey === 'professional'
                       ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
@@ -213,7 +211,7 @@ const DashboardLayout = () => {
 
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                className="p-2 rounded-md text-white hover:text-white dark:hover:text-white"
               >
                 {darkMode ? (
                   <Sun className="w-5 h-5" />

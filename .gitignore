@@ -1,5 +1,5 @@
 node_modules
- # Environment variables
+# Environment variables
 .env
 .env.local
 .env.*.local

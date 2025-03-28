@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn, themeClasses } from '../../lib/utils';
 import { Menu, X } from 'lucide-react';
+import logo from './image/policylogo.png';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -21,13 +22,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <span className={cn(
-                "text-xl font-bold",
-                "bg-gradient-to-r from-cyan-400 to-blue-400",
-                "bg-clip-text text-transparent"
-              )}>
-                FinePolicy
-              </span>
+              <img src={logo} alt="FinePolicy Logo" className="h-8 w-auto" />
             </Link>
           </div>
 
@@ -58,7 +53,7 @@ const Header = () => {
                 to="/login"
                 className={cn(
                   "px-4 py-2 rounded-md text-sm font-medium",
-                  "text-blue-300 hover:text-white",
+                  "text-white hover:text-white",
                   "hover:bg-navy-800/50",
                   "transition-colors duration-200"
                 )}
@@ -128,7 +123,7 @@ const Header = () => {
                 to="/login"
                 className={cn(
                   "block px-3 py-2 rounded-md text-base font-medium",
-                  "text-blue-300 hover:text-white",
+                  "text-white hover:text-white",
                   "hover:bg-navy-800/50",
                   "transition-colors duration-200"
                 )}
