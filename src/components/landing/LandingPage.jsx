@@ -150,11 +150,11 @@ const LandingPage = () => {
                         }}
                         className="w-full h-full"
                     >
-                        {/* <img 
-                            src={whitepolicy} 
-                            alt="FinePolicy Logo" 
-                            className="w-[100px] h-full mt-[10px] object-contain" 
-                        /> */}
+                        <img
+                            src={whitepolicy}
+                            alt="FinePolicy Logo"
+                            className="w-[100px] h-full mt-[10px] object-contain"
+                        />
                     </motion.div>
 
                     {/* Pulsing glow effect - keep this */}
