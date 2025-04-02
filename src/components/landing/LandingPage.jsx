@@ -40,9 +40,9 @@ const companyLogos = [
 ];
 
 // EmailJS configuration
-const EMAILJS_SERVICE_ID = 'service_6cohjr8'; // Replace with your actual Service ID
-const EMAILJS_TEMPLATE_ID = 'template_retm0vn'; // Replace with your actual Template ID
-const EMAILJS_PUBLIC_KEY = '6kO0awWz7xlAdFWlf'; // Replace with your actual Public Key
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_finepolicy';
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_waitlist';
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'your_public_key';
 
 const LandingPage = () => {
     const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
