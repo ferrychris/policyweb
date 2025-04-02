@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "https://deno.land/std@0.168.0/http/server.ts": "https://deno.land/std@0.168.0/http/server.ts",
+    "https://esm.sh/@supabase/supabase-js@2.7.1": "https://esm.sh/@supabase/supabase-js@2.7.1",
+    "https://esm.sh/stripe@12.4.0?target=deno": "https://esm.sh/stripe@12.4.0?target=deno"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  }
+}

@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Typography */
+  h1 {
+    @apply text-4xl sm:text-5xl md:text-6xl font-extrabold text-white dark:text-white;
+  }
+
+  h2 {
+    @apply text-3xl font-extrabold text-white dark:text-white;
+  }
+
+  h3 {
+    @apply text-xl font-semibold text-gray-900 dark:text-white;
+  }
+
+  p {
+    @apply text-base text-white dark:text-gray-300;
+  }
+
+  a {
+    @apply text-white hover:text-indigo-600 dark:text-white dark:hover:text-indigo-300 transition-colors duration-200;
+  }
+}
+
+@layer components {
+  /* Text Styles */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500;
+  }
+
+  /* Background Styles */
+  .gradient-bg {
+    @apply bg-gradient-to-r from-indigo-500 to-purple-500 hover:opacity-90 transition-opacity duration-200;
+  }
+
+  /* Button Styles */
+  .primary-button {
+    @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white gradient-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:hover:bg-indigo-900/30;
+  }
+
+  .danger-button {
+    @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200;
+  }
+
+  .success-button {
+    @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 border border-gray-100 dark:border-gray-700 transition-colors duration-200;
+  }
+
+  /* Layout Styles */
+  .section {
+    @apply py-12;
+  }
+
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Interactive Elements */
+  .hover-lift {
+    @apply transform transition-transform duration-200 hover:-translate-y-1;
+  }
+
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+  }
+}
+
+@layer utilities {
+  /* Animations */
+  @keyframes highlight-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(99, 102, 241, 0.3);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+  }
+
+  .highlight-pulse {
+    animation: highlight-pulse 2s ease-in-out;
+  }
+
+  /* Custom Utilities */
+  .text-muted {
+    @apply text-gray-500 dark:text-gray-400;
+  }
+
+  .debug-border {
+    @apply border border-red-500;
+  }
+}
+
+/* Dark Mode Overrides */
+.dark {
+  color-scheme: dark;
+}
+
+/* Global Transitions */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* Hide empty images during development */
+img[src=""] {
+  display: none !important;
+}
