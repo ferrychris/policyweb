@@ -36,7 +36,6 @@ const companyLogos = [
     { name: 'Nivida', logo: nividaLogo },
     { name: 'Liminal', logo: liminalLogo },
     { name: 'Halcyon', logo: halcyonLogo },
-    { name: 'FinePolicy', logo: cropedLogo },
 ];
 
 // EmailJS configuration
@@ -55,7 +54,7 @@ const LandingPage = () => {
     const handleWaitlistSubmit = (e) => {
         e.preventDefault();
         setFormStatus('loading');
-        
+
         // Prepare the template parameters
         const templateParams = {
             to_email: email, // Will be sent to this email address
@@ -67,13 +66,13 @@ const LandingPage = () => {
             reply_to: email,
             join_date: new Date().toLocaleString()
         };
-        
+
         // Send the email using EmailJS
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams, EMAILJS_PUBLIC_KEY)
             .then((response) => {
                 console.log('Email sent successfully!', response);
                 setFormStatus('success');
-                
+
                 // Reset form and close modal after 3 seconds
                 setTimeout(() => {
                     setFormStatus('idle');
@@ -140,10 +139,10 @@ const LandingPage = () => {
                 {/* Logo with recurrent zoom animation */}
                 <div className="mb-1 w-48 h-48 flex items-center justify-center relative z-10">
                     <motion.div
-                        animate={{ 
+                        animate={{
                             scale: [1, 1.05, 1]
                         }}
-                        transition={{ 
+                        transition={{
                             duration: 3,
                             repeat: Infinity,
                             repeatType: "reverse",
@@ -157,11 +156,11 @@ const LandingPage = () => {
                             className="w-[100px] h-full mt-[10px] object-contain" 
                         /> */}
                     </motion.div>
-                    
+
                     {/* Pulsing glow effect - keep this */}
-                    <motion.div 
+                    <motion.div
                         className="absolute inset-0 rounded-full bg-[#7121ef]/20 filter blur-md -z-10"
-                        animate={{ 
+                        animate={{
                             scale: [1, 1.2, 1],
                             opacity: [0.2, 0.4, 0.2]
                         }}
@@ -190,8 +189,8 @@ const LandingPage = () => {
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="text-2xl text-gray-300 mb-14 max-w-3xl mx-auto leading-relaxed"
                     >
-                        At FinePolicy, we guide you through the transformative journey of policy 
-                        creation—ensuring every step is secure, compliant, and aligned with your 
+                        At FinePolicy, we guide you through the transformative journey of policy
+                        creation—ensuring every step is secure, compliant, and aligned with your
                         business goals.
                     </motion.p>
 
@@ -202,7 +201,7 @@ const LandingPage = () => {
                         className="flex flex-col sm:flex-row gap-6 justify-center"
                     >
                         <div className="relative group">
-                            <span 
+                            <span
                                 className="inline-flex items-center px-10 py-5 rounded-lg bg-[#7121ef]/50 text-white text-lg font-semibold cursor-not-allowed opacity-80 overflow-hidden"
                             >
                                 <motion.div
@@ -220,7 +219,7 @@ const LandingPage = () => {
                                         <ArrowRight className="h-6 w-6" />
                                     </motion.div>
                                 </motion.div>
-                                <motion.span 
+                                <motion.span
                                     className="ml-2 bg-[#7121ef] text-white text-sm px-2 py-1 rounded"
                                     whileHover={{ scale: 1.1 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -247,7 +246,7 @@ const LandingPage = () => {
                                     initial={{ x: 0 }}
                                     whileHover={{ x: 4 }}
                                     animate={{ x: [0, 4, 0] }}
-                                    transition={{ 
+                                    transition={{
                                         x: {
                                             duration: 1.5,
                                             repeat: Infinity,
@@ -273,7 +272,7 @@ const LandingPage = () => {
                             Trusted by Industry Leaders
                         </h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center justify-items-center">
+                    <div className="flex justify-center items-center space-x-4 md:space-x-8 lg:space-x-16 mx-auto">
                         {companyLogos.map((company, index) => (
                             <motion.div
                                 key={company.name}
@@ -281,12 +280,12 @@ const LandingPage = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                                 viewport={{ once: true }}
-                                className="w-full flex justify-center"
+                                className="flex justify-center items-center"
                             >
-                                <img 
-                                    src={company.logo} 
-                                    alt={company.name + " logo"} 
-                                    className="h-12 md:h-16 w-auto object-contain mix-blend-lighten filter brightness-0 invert opacity-80 hover:opacity-100 transition-opacity duration-300"
+                                <img
+                                    src={company.logo}
+                                    alt={company.name + " logo"}
+                                    className="h-10 md:h-12 lg:h-16 w-auto object-contain mix-blend-lighten filter brightness-0 invert opacity-80 hover:opacity-100 transition-opacity duration-300"
                                 />
                             </motion.div>
                         ))}
@@ -383,10 +382,10 @@ const LandingPage = () => {
                             We're constantly innovating to bring you the best policy management tools. Here's a sneak peek of what's coming next.
                         </p>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Feature Card 1 */}
-                        <motion.div 
+                        <motion.div
                             className="p-8 sm:p-10 rounded-xl bg-gray-900/50 border border-[#7121ef]/20 relative group overflow-hidden h-full flex flex-col"
                             animate={{
                                 boxShadow: [
@@ -425,9 +424,9 @@ const LandingPage = () => {
                                 </span>
                             </div>
                         </motion.div>
-                        
+
                         {/* Feature Card 2 */}
-                        <motion.div 
+                        <motion.div
                             className="p-8 sm:p-10 rounded-xl bg-gray-900/50 border border-[#7121ef]/20 relative group overflow-hidden h-full flex flex-col"
                             animate={{
                                 boxShadow: [
@@ -467,9 +466,9 @@ const LandingPage = () => {
                                 </span>
                             </div>
                         </motion.div>
-                        
+
                         {/* Feature Card 3 */}
-                        <motion.div 
+                        <motion.div
                             className="p-8 sm:p-10 rounded-xl bg-gray-900/50 border border-[#7121ef]/20 relative group overflow-hidden h-full flex flex-col"
                             animate={{
                                 boxShadow: [
@@ -510,9 +509,9 @@ const LandingPage = () => {
                             </div>
                         </motion.div>
                     </div>
-                    
+
                     <div className="mt-14 text-center">
-                        <button 
+                        <button
                             onClick={() => setIsWaitlistModalOpen(true)}
                             className="inline-flex items-center px-8 py-4 rounded-lg bg-[#7121ef]/20 text-white font-medium border border-[#7121ef]/40 overflow-hidden group relative hover:bg-[#7121ef]/30 transition-colors"
                         >
@@ -523,7 +522,7 @@ const LandingPage = () => {
                             >
                                 <motion.div
                                     animate={{ rotate: [0, 360] }}
-                                    transition={{ 
+                                    transition={{
                                         duration: 6,
                                         repeat: Infinity,
                                         ease: "linear"
@@ -567,7 +566,7 @@ const LandingPage = () => {
                                     </motion.li>
                                 ))}
                             </ul>
-                            <motion.div 
+                            <motion.div
                                 className="mt-8"
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -747,27 +746,27 @@ const LandingPage = () => {
             {/* Waitlist Modal */}
             <AnimatePresence>
                 {isWaitlistModalOpen && (
-                    <motion.div 
+                    <motion.div
                         className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setIsWaitlistModalOpen(false)}
                     >
-                        <motion.div 
+                        <motion.div
                             className="bg-gray-900 rounded-xl p-6 max-w-md w-full relative border border-[#7121ef]/30"
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
                             onClick={e => e.stopPropagation()}
                         >
-                            <button 
+                            <button
                                 className="absolute top-4 right-4 text-gray-400 hover:text-white"
                                 onClick={() => setIsWaitlistModalOpen(false)}
                             >
                                 <X className="h-5 w-5" />
                             </button>
-                            
+
                             <div className="text-center mb-6">
                                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#7121ef]/20 mb-4">
                                     <Clock className="h-6 w-6 text-[#7121ef]" />
@@ -775,7 +774,7 @@ const LandingPage = () => {
                                 <h3 className="text-xl font-bold text-white">Join Our Waitlist</h3>
                                 <p className="text-gray-400 mt-2">Be the first to know when we launch.</p>
                             </div>
-                            
+
                             {formStatus === 'idle' && (
                                 <form ref={formRef} onSubmit={handleWaitlistSubmit} className="space-y-4">
                                     <div>
@@ -811,7 +810,7 @@ const LandingPage = () => {
                                             You'll receive a confirmation email at this address.
                                         </p>
                                     </div>
-                                    <button 
+                                    <button
                                         type="submit"
                                         className="w-full bg-[#7121ef] hover:bg-[#8341f0] text-white py-2 px-4 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center"
                                     >
@@ -820,9 +819,9 @@ const LandingPage = () => {
                                     </button>
                                 </form>
                             )}
-                            
+
                             {formStatus === 'loading' && (
-                                <motion.div 
+                                <motion.div
                                     className="bg-gray-800/50 p-8 rounded-lg border border-gray-700 text-center"
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -832,9 +831,9 @@ const LandingPage = () => {
                                     <p className="text-gray-300">Adding you to our waitlist</p>
                                 </motion.div>
                             )}
-                            
+
                             {formStatus === 'success' && (
-                                <motion.div 
+                                <motion.div
                                     className="bg-[#7121ef]/20 p-8 rounded-lg border border-[#7121ef]/40 text-center"
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -844,9 +843,9 @@ const LandingPage = () => {
                                     <p className="text-gray-300">You've been added to our waitlist. We'll notify you when we launch.</p>
                                 </motion.div>
                             )}
-                            
+
                             {formStatus === 'error' && (
-                                <motion.div 
+                                <motion.div
                                     className="bg-red-900/20 p-8 rounded-lg border border-red-700/40 text-center"
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -854,7 +853,7 @@ const LandingPage = () => {
                                     <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
                                     <h4 className="text-white font-medium text-lg">Something went wrong</h4>
                                     <p className="text-gray-300">{errorMessage}</p>
-                                    <button 
+                                    <button
                                         className="mt-4 text-white bg-[#7121ef] hover:bg-[#8341f0] px-4 py-2 rounded-lg text-sm font-medium"
                                         onClick={() => setFormStatus('idle')}
                                     >
@@ -862,7 +861,7 @@ const LandingPage = () => {
                                     </button>
                                 </motion.div>
                             )}
-                            
+
                             <p className="text-gray-500 text-xs mt-6 text-center">
                                 By joining, you agree to our Privacy Policy and Terms of Service.
                             </p>

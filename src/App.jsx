@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { NotificationProvider } from './context/NotificationContext';
+import { NotificationProvider, useNotifications } from './context/NotificationContext';
 import { Toaster } from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DashboardLayout from './components/userdashboard/DashboardLayout';
@@ -18,6 +18,12 @@ import PaymentForm from './components/userdashboard/PaymentForm';
 import PolicyWizard from './components/userdashboard/PolicyWizard';
 import { cn } from './lib/utils';
 
+// Component to conditionally render Toaster based on notification settings
+const NotificationToaster = () => {
+  const { notificationsEnabled } = useNotifications();
+  return notificationsEnabled ? <Toaster position="top-right" richColors /> : null;
+};
+
 const App = () => {
   return (
     <AuthProvider>
@@ -25,7 +31,7 @@ const App = () => {
         <div className={cn(
           "min-h-screen bg-navy-900 text-white"
         )}>
-          <Toaster position="top-right" richColors />
+          <NotificationToaster />
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getCurrentUser } from '../../lib/userService';
-import { FaUser, FaEnvelope, FaBuilding, FaGlobe, FaSave, FaLock } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaBuilding, FaGlobe, FaSave, FaLock, FaBell } from 'react-icons/fa';
+import { useNotifications } from '../../context/NotificationContext';
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
@@ -15,6 +16,7 @@ const UserProfile = () => {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const { notificationsEnabled, enableNotifications, disableNotifications } = useNotifications();
 
   useEffect(() => {
     const loadUser = () => {
@@ -22,7 +24,7 @@ const UserProfile = () => {
       try {
         const userData = getCurrentUser();
         setUser(userData);
-        
+
         // Initialize form data with user data
         setFormData({
           name: userData?.name || '',
@@ -37,7 +39,7 @@ const UserProfile = () => {
         setLoading(false);
       }
     };
-    
+
     loadUser();
   }, []);
 
@@ -52,7 +54,7 @@ const UserProfile = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSaving(true);
-    
+
     // Simulate API call to save user data
     setTimeout(() => {
       // Update local user object to reflect changes
@@ -60,10 +62,10 @@ const UserProfile = () => {
         ...prev,
         ...formData
       }));
-      
+
       setSaving(false);
       setSaveSuccess(true);
-      
+
       // Reset success message after 3 seconds
       setTimeout(() => {
         setSaveSuccess(false);
@@ -77,6 +79,14 @@ const UserProfile = () => {
     alert('Password change functionality would be implemented here');
   };
 
+  const toggleNotifications = () => {
+    if (notificationsEnabled) {
+      disableNotifications();
+    } else {
+      enableNotifications();
+    }
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto">
       <div className="mb-8">
@@ -85,7 +95,7 @@ const UserProfile = () => {
           Manage your account settings and preferences
         </p>
       </div>
-      
+
       {loading ? (
         <div className="flex justify-center items-center p-12">
           <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-indigo-500" role="status">
@@ -96,27 +106,34 @@ const UserProfile = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="flex border-b border-gray-200 dark:border-gray-700">
             <button
-              className={`px-6 py-3 font-medium text-sm focus:outline-none ${
-                activeTab === 'profile'
+              className={`px-6 py-3 font-medium text-sm focus:outline-none ${activeTab === 'profile'
                   ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
                   : 'text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400'
-              }`}
+                }`}
               onClick={() => setActiveTab('profile')}
             >
               Profile
             </button>
             <button
-              className={`px-6 py-3 font-medium text-sm focus:outline-none ${
-                activeTab === 'security'
+              className={`px-6 py-3 font-medium text-sm focus:outline-none ${activeTab === 'security'
                   ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
                   : 'text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400'
-              }`}
+                }`}
               onClick={() => setActiveTab('security')}
             >
               Security
             </button>
+            <button
+              className={`px-6 py-3 font-medium text-sm focus:outline-none ${activeTab === 'notifications'
+                  ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400'
+                }`}
+              onClick={() => setActiveTab('notifications')}
+            >
+              Notifications
+            </button>
           </div>
-          
+
           <div className="p-6">
             {activeTab === 'profile' ? (
               <>
@@ -125,7 +142,7 @@ const UserProfile = () => {
                     Your profile has been updated successfully!
                   </div>
                 )}
-                
+
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -144,7 +161,7 @@ const UserProfile = () => {
                         <FaUser className="absolute left-3 top-3 text-gray-400" />
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Email Address
@@ -161,7 +178,7 @@ const UserProfile = () => {
                         <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Company Name
@@ -178,7 +195,7 @@ const UserProfile = () => {
                         <FaBuilding className="absolute left-3 top-3 text-gray-400" />
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Country
@@ -200,7 +217,7 @@ const UserProfile = () => {
                         <FaGlobe className="absolute left-3 top-3 text-gray-400" />
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Industry
@@ -221,7 +238,7 @@ const UserProfile = () => {
                       </select>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-end">
                     <button
                       type="submit"
@@ -243,10 +260,10 @@ const UserProfile = () => {
                   </div>
                 </form>
               </>
-            ) : (
+            ) : activeTab === 'security' ? (
               <div className="space-y-6">
                 <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Password</h2>
-                
+
                 <form onSubmit={handleChangePassword} className="space-y-6">
                   <div className="max-w-md">
                     <div className="mb-4">
@@ -262,7 +279,7 @@ const UserProfile = () => {
                         <FaLock className="absolute left-3 top-3 text-gray-400" />
                       </div>
                     </div>
-                    
+
                     <div className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         New Password
@@ -273,7 +290,7 @@ const UserProfile = () => {
                         placeholder="Enter new password"
                       />
                     </div>
-                    
+
                     <div className="mb-6">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Confirm New Password
@@ -285,7 +302,7 @@ const UserProfile = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <button
                       type="submit"
@@ -296,6 +313,79 @@ const UserProfile = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                  <FaBell className="mr-2" />
+                  Notification Settings
+                </h2>
+
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100">All Notifications</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Enable or disable all notifications
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notificationsEnabled}
+                          onChange={toggleNotifications}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg opacity-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100">Email Notifications</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Receive notifications via email
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <label className="relative inline-flex items-center cursor-not-allowed">
+                        <input
+                          type="checkbox"
+                          disabled
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">Coming soon</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg opacity-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100">Policy Updates</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Get notified about policy template updates
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <label className="relative inline-flex items-center cursor-not-allowed">
+                        <input
+                          type="checkbox"
+                          disabled
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">Coming soon</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

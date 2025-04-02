@@ -7,6 +7,7 @@ const NotificationContext = createContext({});
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
     useEffect(() => {
         // Subscribe to real-time notifications
@@ -20,16 +21,20 @@ export const NotificationProvider = ({ children }) => {
                 const newNotification = payload.new;
                 setNotifications(prev => [newNotification, ...prev]);
                 setUnreadCount(prev => prev + 1);
-                showNotification(newNotification);
+                if (notificationsEnabled) {
+                    showNotification(newNotification);
+                }
             })
             .subscribe();
 
         return () => {
             subscription.unsubscribe();
         };
-    }, []);
+    }, [notificationsEnabled]);
 
     const showNotification = (notification) => {
+        if (!notificationsEnabled) return;
+
         toast(notification.title, {
             description: notification.message,
             duration: 5000,
@@ -43,7 +48,7 @@ export const NotificationProvider = ({ children }) => {
     const handleNotificationClick = (notification) => {
         // Mark as read
         markAsRead(notification.id);
-        
+
         // Navigate to relevant page if needed
         if (notification.link) {
             window.location.href = notification.link;
@@ -90,11 +95,24 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
+    // Function to enable notifications
+    const enableNotifications = () => {
+        setNotificationsEnabled(true);
+    };
+
+    // Function to disable notifications
+    const disableNotifications = () => {
+        setNotificationsEnabled(false);
+    };
+
     const value = {
         notifications,
         unreadCount,
         markAsRead,
-        markAllAsRead
+        markAllAsRead,
+        notificationsEnabled,
+        enableNotifications,
+        disableNotifications
     };
 
     return (
