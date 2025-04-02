@@ -124,20 +124,20 @@ const LandingPage = () => {
         <div className="min-h-screen bg-black">
             <Header />
             {/* Hero Section with Gradient + Masked Grid Pattern */}
-            <section className="relative overflow-hidden pt-20 bg-gradient-to-b from-black via-purple-900/50 to-black min-h-[90vh] flex flex-col items-center justify-center">
+            <section className="relative overflow-hidden pt-16 sm:pt-20 bg-gradient-to-b from-black via-purple-900/50 to-black min-h-[80vh] sm:min-h-[90vh] flex flex-col items-center justify-center">
                 {/* Animated + Masked Grid Overlay */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] animate-grid-pan-new"></div>
 
                 {/* Coming Soon Badge */}
-                <div className="absolute top-24 right-8 md:right-16 lg:right-24">
-                    <div className="bg-[#7121ef]/80 text-white px-4 py-2 rounded-full shadow-lg flex items-center transform rotate-12">
-                        <Clock className="w-5 h-5 mr-2" />
-                        <span className="font-bold">Coming Soon</span>
+                <div className="absolute top-16 right-4 md:top-24 md:right-16 lg:right-24">
+                    <div className="bg-[#7121ef]/80 text-white px-3 py-1 md:px-4 md:py-2 rounded-full shadow-lg flex items-center transform rotate-12">
+                        <Clock className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
+                        <span className="font-bold text-sm md:text-base">Coming Soon</span>
                     </div>
                 </div>
 
                 {/* Logo with recurrent zoom animation */}
-                <div className="mb-1 w-48 h-48 flex items-center justify-center relative z-10">
+                <div className="mb-2 w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 flex items-center justify-center relative z-10">
                     <motion.div
                         animate={{
                             scale: [1, 1.05, 1]
@@ -153,7 +153,7 @@ const LandingPage = () => {
                         <img
                             src={whitepolicy}
                             alt="FinePolicy Logo"
-                            className="w-[100px] h-full mt-[10px] object-contain"
+                            className="w-[80px] md:w-[100px] h-full mt-[10px] object-contain"
                         />
                     </motion.div>
 
@@ -173,36 +173,34 @@ const LandingPage = () => {
                     />
                 </div>
 
-                <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+                <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="text-6xl md:text-8xl font-bold mb-8 text-white whitespace-nowrap mx-auto"
+                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-8 text-white mx-auto"
                     >
-                        Your Trusted AI Policy Partner
+                        AI-Powered Policy Solutions
                     </motion.h1>
 
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="text-2xl text-gray-300 mb-14 max-w-3xl mx-auto leading-relaxed"
+                        className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 md:mb-14 max-w-3xl mx-auto leading-relaxed"
                     >
-                        At FinePolicy, we guide you through the transformative journey of policy
-                        creation—ensuring every step is secure, compliant, and aligned with your
-                        business goals.
+                        Secure, compliant, and customized policies in minutes
                     </motion.p>
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
-                        className="flex flex-col sm:flex-row gap-6 justify-center"
+                        className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center"
                     >
                         <div className="relative group">
                             <span
-                                className="inline-flex items-center px-10 py-5 rounded-lg bg-[#7121ef]/50 text-white text-lg font-semibold cursor-not-allowed opacity-80 overflow-hidden"
+                                className="inline-flex items-center px-6 sm:px-10 py-3 sm:py-5 rounded-lg bg-[#7121ef]/50 text-white text-base md:text-lg font-semibold cursor-not-allowed opacity-80 overflow-hidden"
                             >
                                 <motion.div
                                     className="flex items-center"
@@ -211,37 +209,37 @@ const LandingPage = () => {
                                 >
                                     Get Started
                                     <motion.div
-                                        className="ml-3"
+                                        className="ml-2 md:ml-3"
                                         initial={{ x: 0 }}
                                         whileHover={{ x: 4 }}
                                         transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                     >
-                                        <ArrowRight className="h-6 w-6" />
+                                        <ArrowRight className="h-5 w-5 md:h-6 md:w-6" />
                                     </motion.div>
                                 </motion.div>
                                 <motion.span
-                                    className="ml-2 bg-[#7121ef] text-white text-sm px-2 py-1 rounded"
+                                    className="ml-2 bg-[#7121ef] text-white text-xs md:text-sm px-2 py-1 rounded"
                                     whileHover={{ scale: 1.1 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                 >
                                     Coming Soon
                                 </motion.span>
                             </span>
-                            <div className="absolute -bottom-8 left-0 right-0 text-sm text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <div className="absolute -bottom-6 md:-bottom-8 left-0 right-0 text-xs md:text-sm text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                 We're working hard to launch soon!
                             </div>
                         </div>
                         <span
-                            className="inline-flex items-center px-10 py-5 rounded-lg bg-transparent border border-[#7121ef]/50 text-white text-lg font-semibold cursor-not-allowed opacity-80 overflow-hidden group"
+                            className="inline-flex items-center px-6 sm:px-10 py-3 sm:py-5 rounded-lg bg-transparent border border-[#7121ef]/50 text-white text-base md:text-lg font-semibold cursor-not-allowed opacity-80 overflow-hidden group"
                         >
                             <motion.div
                                 className="flex items-center"
                                 whileHover={{ scale: 1.05 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
                             >
-                                Take the Policy Readiness Assessment
+                                Policy Assessment
                                 <motion.div
-                                    className="ml-3"
+                                    className="ml-2 md:ml-3"
                                     initial={{ x: 0 }}
                                     whileHover={{ x: 4 }}
                                     animate={{ x: [0, 4, 0] }}
@@ -255,7 +253,7 @@ const LandingPage = () => {
                                         }
                                     }}
                                 >
-                                    <ArrowRight className="h-6 w-6" />
+                                    <ArrowRight className="h-5 w-5 md:h-6 md:w-6" />
                                 </motion.div>
                             </motion.div>
                         </span>
