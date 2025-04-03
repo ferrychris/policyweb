@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
-import { Sun, Moon, Home, Package, User, CreditCard, FileText, LogOut, Menu, X, Bell } from 'lucide-react';
+import {
+  Sun, Moon, Home, Package, User, CreditCard, FileText,
+  LogOut, Menu, X, Bell, Settings, BarChart, Star,
+  Activity, Globe
+} from 'lucide-react';
 import { getUserSubscription, getCurrentUser } from '../../lib/userService';
 import { getPackagesFromDatabase } from '../../lib/policySettings';
 import { useAuth } from '../../context/AuthContext';
@@ -82,28 +86,28 @@ const DashboardLayout = () => {
     },
     {
       icon: <FileText className="w-5 h-5" />,
-      label: 'Policies',
+      label: 'All Policies',
       path: '/dashboard/policies'
     },
     {
-      icon: <FileText className="w-5 h-5" />,
-      label: 'New Policy',
-      path: '/dashboard/new-policy'
-    },
-    {
       icon: <Package className="w-5 h-5" />,
-      label: 'Packages',
-      path: '/dashboard/packages'
+      label: 'Policy Templates',
+      path: '/dashboard/templates'
     },
     {
-      icon: <CreditCard className="w-5 h-5" />,
-      label: 'Subscription',
-      path: '/dashboard/subscription'
+      icon: <Activity className="w-5 h-5" />,
+      label: 'Policy Activity',
+      path: '/dashboard/activity'
     },
     {
-      icon: <User className="w-5 h-5" />,
-      label: 'Profile',
-      path: '/dashboard/profile'
+      icon: <Globe className="w-5 h-5" />,
+      label: 'Platforms',
+      path: '/dashboard/platforms'
+    },
+    {
+      icon: <Settings className="w-5 h-5" />,
+      label: 'Settings',
+      path: '/dashboard/settings'
     }
   ];
 
@@ -122,7 +126,7 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#1A0B2E]">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -135,30 +139,30 @@ const DashboardLayout = () => {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-200 ease-in-out",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-[#13091F] transform transition-transform duration-200 ease-in-out border-r border-[#2E1D4C]/30",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
           "md:translate-x-0"
         )}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center h-16 px-6 border-b border-[#2E1D4C]/30">
             <Link to="/dashboard" className="flex items-center">
-              <img src={logo} alt="FinePolicy Logo" className="h-8 w-auto" />
+              <span className="text-2xl font-bold bg-gradient-to-r from-[#B4A5FF] to-[#E2DDFF] text-transparent bg-clip-text">Nova</span>
             </Link>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-2 py-4 space-y-1">
+          <nav className="flex-1 px-3 py-4 space-y-1">
             {menuItems.map((item) => (
               <Link
                 key={item.label}
                 to={item.path}
                 className={cn(
-                  "flex items-center px-4 py-2 text-sm font-medium rounded-md",
+                  "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150",
                   location.pathname === item.path
-                    ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    ? "bg-[#2E1D4C] text-[#E2DDFF]"
+                    : "text-[#B4A5FF] hover:bg-[#2E1D4C]/50"
                 )}
               >
                 {item.icon}
@@ -167,37 +171,17 @@ const DashboardLayout = () => {
             ))}
           </nav>
 
-          {/* Sidebar footer */}
-          <div className="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400">
-              {user?.name?.charAt(0) || 'U'}
+          {/* User Profile */}
+          <div className="px-4 py-4 border-t border-[#2E1D4C]/30">
+            <div className="flex items-center">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#2E1D4C] text-[#E2DDFF]">
+                {user?.name?.charAt(0) || 'U'}
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-[#E2DDFF]">{user?.name || 'User'}</p>
+                <p className="text-xs text-[#B4A5FF]">Marketing Director</p>
+              </div>
             </div>
-            <div className="ml-3">
-              <p className="font-medium">{user?.name || 'User'}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-500">{user?.email || 'user@example.com'}</p>
-            </div>
-
-            <button
-              onClick={toggleDarkMode}
-              className="flex items-center w-full px-2 py-3 mt-2 rounded-lg text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              {darkMode ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-              <span className="ml-3 font-medium">
-                {darkMode ? 'Light Mode' : 'Dark Mode'}
-              </span>
-            </button>
-
-            <button
-              onClick={handleSignOut}
-              className="flex items-center w-full px-2 py-3 mt-2 rounded-lg text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="ml-3 font-medium">Log Out</span>
-            </button>
           </div>
         </div>
       </div>
@@ -205,107 +189,97 @@ const DashboardLayout = () => {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Header */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
-          <div className="flex items-center justify-between px-4 py-4">
-            <button
-              onClick={toggleSidebar}
-              className="p-2 rounded-md text-white hover:text-white dark:hover:text-white lg:hidden"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+        <header className="bg-[#13091F] sticky top-0 z-10 border-b border-[#2E1D4C]/30">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center">
+              <button
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg text-[#B4A5FF] hover:bg-[#2E1D4C]/50 lg:hidden"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
 
-            <div className="ml-auto flex items-center">
-              {/* Notification Bell */}
-              <div className="relative mr-4">
-                <button
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-2 rounded-md text-white hover:text-white dark:hover:text-white relative"
-                >
-                  <Bell className="w-5 h-5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                {/* Notification Dropdown */}
-                {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50">
-                    <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
-                      {unreadCount > 0 && (
-                        <button
-                          onClick={markAllAsRead}
-                          className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
-                        >
-                          Mark all as read
-                        </button>
-                      )}
-                    </div>
-                    <div className="max-h-96 overflow-y-auto">
-                      {notifications.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                          No notifications
-                        </div>
-                      ) : (
-                        notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={cn(
-                              "p-4 border-b border-gray-200 dark:border-gray-700",
-                              !notification.read && "bg-blue-50 dark:bg-blue-900/20"
-                            )}
-                          >
-                            <h4 className="font-medium text-gray-900 dark:text-white">
-                              {notification.title}
-                            </h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                              {notification.message}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                              {new Date(notification.created_at).toLocaleString()}
-                            </p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {subscription && (
-                <div className="mr-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${subscription.packageKey === 'premium'
-                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
-                    : subscription.packageKey === 'professional'
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                      : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                    }`}>
-                    {subscription.packageKey.charAt(0).toUpperCase() + subscription.packageKey.slice(1)}
-                  </span>
+              {/* Search Bar */}
+              <div className="hidden md:flex ml-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    className="w-64 px-4 py-2 text-sm text-[#E2DDFF] bg-[#2E1D4C]/30 rounded-lg border border-[#2E1D4C]/50 focus:outline-none focus:border-[#B4A5FF]/50"
+                  />
                 </div>
-              )}
+              </div>
+            </div>
 
+            <div className="flex items-center space-x-4">
+              {/* Notification Bell */}
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-2 rounded-lg text-[#B4A5FF] hover:bg-[#2E1D4C]/50 relative"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#B4A5FF] text-[#13091F] text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Theme Toggle */}
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-md text-white hover:text-white dark:hover:text-white"
+                className="p-2 rounded-lg text-[#B4A5FF] hover:bg-[#2E1D4C]/50"
               >
-                {darkMode ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
+                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+
+              {/* Export Data Button */}
+              <button className="hidden md:flex items-center px-4 py-2 text-sm font-medium text-[#E2DDFF] bg-[#2E1D4C] rounded-lg hover:bg-[#2E1D4C]/80 transition-colors">
+                <span>Export Data</span>
               </button>
             </div>
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="px-4 py-8">
+        {/* Page Content */}
+        <main className="p-6">
           <Outlet />
         </main>
       </div>
+
+      {/* Notification Dropdown */}
+      {showNotifications && (
+        <div className="absolute right-4 top-16 mt-2 w-80 bg-[#13091F] rounded-lg shadow-lg z-50 border border-[#2E1D4C]/30">
+          <div className="p-4 border-b border-[#2E1D4C]/30 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-[#E2DDFF]">Notifications</h3>
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="text-sm text-[#B4A5FF] hover:text-[#E2DDFF]"
+              >
+                Mark all as read
+              </button>
+            )}
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="p-4 text-center text-[#B4A5FF]">
+                No notifications
+              </div>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className="p-4 border-b border-[#2E1D4C]/30 hover:bg-[#2E1D4C]/20"
+                >
+                  <p className="text-[#E2DDFF]">{notification.message}</p>
+                  <p className="text-xs text-[#B4A5FF] mt-1">{notification.time}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

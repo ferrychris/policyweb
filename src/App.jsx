@@ -16,6 +16,7 @@ import UserProfile from './components/userdashboard/UserProfile';
 import Packages from './components/userdashboard/Packages';
 import PaymentForm from './components/userdashboard/PaymentForm';
 import PolicyWizard from './components/userdashboard/PolicyWizard';
+import NewPolicy from './components/userdashboard/NewPolicy';
 import { cn } from './lib/utils';
 
 // Component to conditionally render Toaster based on notification settings
@@ -49,6 +50,9 @@ const App = () => {
               <Route path="profile" element={<UserProfile />} />
               <Route path="payment" element={<PaymentForm />} />
             </Route>
+
+            {/* New Policy Route */}
+            <Route path="/dashboard/new-policy" element={<NewPolicy />} />
 
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
