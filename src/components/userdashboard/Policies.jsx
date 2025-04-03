@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import { getUserPoliciesCurrent, updateUserPolicy, deleteUserPolicy } from '../../lib/userService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { generatePolicy, generateSuggestions } from '../../lib/openai';
+import { toast } from 'sonner';
 import {
   FaEdit,
   FaDownload,
@@ -36,9 +38,11 @@ import {
   FaSync,
   FaUpload,
   FaLink,
-  FaRegCheckCircle
+  FaRegCheckCircle,
+  FaCheck
 } from 'react-icons/fa';
 import { cn, themeClasses, gradientClasses } from '../../lib/utils';
+import PolicyEditor from '../editor/PolicyEditor';
 
 const policyTypes = [
   {
@@ -204,6 +208,15 @@ const Policies = () => {
     notifyChanges: true,
     reviewPeriod: 'quarterly'
   });
+  const [showPolicyEditor, setShowPolicyEditor] = useState(false);
+  const [showPolicyGenerationModal, setShowPolicyGenerationModal] = useState(false);
+  const [generatedPolicy, setGeneratedPolicy] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [versionHistory, setVersionHistory] = useState([]);
+  const [selectedText, setSelectedText] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     // Load user policies
@@ -368,18 +381,154 @@ const Policies = () => {
 
   const handleRegulationsSubmit = () => {
     setShowRegulationsModal(false);
-    navigate('/dashboard/new-policy', {
-      state: {
-        policyType: selectedPolicyType.id,
-        policyTitle: selectedPolicyType.title,
-        organizationDetails,
-        regulations: {
-          selected: selectedRegulations,
-          monitoring: monitoringPreferences,
+    setShowPolicyGenerationModal(true);
+    generateInitialPolicy();
+  };
+
+  const generateInitialPolicy = async () => {
+    setIsGenerating(true);
+    setGenerationProgress(0);
+
+    try {
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
+        setGenerationProgress(prev => Math.min(prev + 10, 90));
+      }, 1000);
+
+      // Call OpenAI to generate the policy
+      const generatedContent = await generatePolicy(
+        selectedPolicyType.title,
+        {
+          ...organizationDetails,
+          regulations: selectedRegulations,
+          monitoringPreferences,
           existingPolicies: uploadedPolicies
         }
+      );
+
+      clearInterval(progressInterval);
+      setGenerationProgress(100);
+      setGeneratedPolicy(generatedContent);
+
+      // Add to version history
+      setVersionHistory([
+        {
+          id: Date.now(),
+          content: generatedContent,
+          timestamp: new Date(),
+          type: 'initial'
+        }
+      ]);
+    } catch (error) {
+      console.error('Error generating policy:', error);
+      toast.error('Failed to generate policy. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleTextSelection = async () => {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+
+    if (selectedText) {
+      setSelectedText(selectedText);
+      setShowSuggestions(true);
+
+      try {
+        // Get AI suggestions for the selected text
+        const suggestions = await generateSuggestions(selectedText);
+        setSuggestions(suggestions);
+      } catch (error) {
+        console.error('Error getting suggestions:', error);
+        toast.error('Failed to get suggestions. Please try again.');
       }
+    }
+  };
+
+  const handleSuggestionApply = (suggestion) => {
+    const newContent = generatedPolicy.replace(selectedText, suggestion);
+    setGeneratedPolicy(newContent);
+
+    // Add to version history
+    setVersionHistory(prev => [...prev, {
+      id: Date.now(),
+      content: newContent,
+      timestamp: new Date(),
+      type: 'edit'
+    }]);
+
+    setShowSuggestions(false);
+  };
+
+  const handleRegeneratePolicy = async () => {
+    setIsGenerating(true);
+    setGenerationProgress(0);
+
+    try {
+      const newContent = await generatePolicy(
+        selectedPolicyType.title,
+        {
+          ...organizationDetails,
+          regulations: selectedRegulations,
+          monitoringPreferences,
+          existingPolicies: uploadedPolicies
+        }
+      );
+
+      setGeneratedPolicy(newContent);
+
+      // Add to version history
+      setVersionHistory(prev => [...prev, {
+        id: Date.now(),
+        content: newContent,
+        timestamp: new Date(),
+        type: 'regenerate'
+      }]);
+    } catch (error) {
+      console.error('Error regenerating policy:', error);
+      toast.error('Failed to regenerate policy. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleSavePolicy = () => {
+    // Create a new policy object
+    const newPolicy = {
+      id: Date.now(),
+      title: selectedPolicyType.title,
+      content: generatedPolicy,
+      type: selectedPolicyType.id,
+      createdAt: new Date().toISOString(),
+      versions: versionHistory
+    };
+
+    // Add the policy to the list
+    setPolicies(prev => [...prev, newPolicy]);
+
+    // Reset all modals and states
+    setShowPolicyGenerationModal(false);
+    setSelectedPolicyType(null);
+    setOrganizationDetails({
+      companyName: '',
+      website: '',
+      email: '',
+      country: '',
+      industry: '',
+      aiMaturityLevel: '',
+      effectiveDate: '',
+      templateStyle: ''
     });
+    setSelectedRegulations([]);
+    setUploadedPolicies([]);
+    setMonitoringPreferences({
+      autoUpdate: false,
+      notifyChanges: true,
+      reviewPeriod: 'quarterly'
+    });
+    setGeneratedPolicy('');
+    setVersionHistory([]);
   };
 
   return (
@@ -1054,6 +1203,209 @@ const Policies = () => {
               >
                 Save Changes
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Policy Editor */}
+      {showPolicyEditor && (
+        <PolicyEditor
+          initialData={{
+            policyType: selectedPolicyType.id,
+            policyTitle: selectedPolicyType.title,
+            organizationDetails,
+            regulations: {
+              selected: selectedRegulations,
+              monitoring: monitoringPreferences,
+              existingPolicies: uploadedPolicies
+            },
+            packageType: 'basic' // This should come from user's subscription
+          }}
+          onSave={async (data) => {
+            try {
+              // Add the new policy to the list
+              const newPolicy = {
+                id: Date.now(),
+                title: selectedPolicyType.title,
+                content: data.content,
+                type: selectedPolicyType.id,
+                createdAt: new Date().toISOString(),
+                versions: data.versions
+              };
+
+              setPolicies(prev => [...prev, newPolicy]);
+              setShowPolicyEditor(false);
+
+              // Reset the form data
+              setSelectedPolicyType(null);
+              setOrganizationDetails({
+                companyName: '',
+                website: '',
+                email: '',
+                country: '',
+                industry: '',
+                aiMaturityLevel: '',
+                effectiveDate: '',
+                templateStyle: ''
+              });
+              setSelectedRegulations([]);
+              setUploadedPolicies([]);
+              setMonitoringPreferences({
+                autoUpdate: false,
+                notifyChanges: true,
+                reviewPeriod: 'quarterly'
+              });
+            } catch (error) {
+              console.error('Error saving policy:', error);
+            }
+          }}
+          onClose={() => {
+            setShowPolicyEditor(false);
+            // Reset the form data
+            setSelectedPolicyType(null);
+            setOrganizationDetails({
+              companyName: '',
+              website: '',
+              email: '',
+              country: '',
+              industry: '',
+              aiMaturityLevel: '',
+              effectiveDate: '',
+              templateStyle: ''
+            });
+            setSelectedRegulations([]);
+            setUploadedPolicies([]);
+            setMonitoringPreferences({
+              autoUpdate: false,
+              notifyChanges: true,
+              reviewPeriod: 'quarterly'
+            });
+          }}
+        />
+      )}
+
+      {/* Policy Generation Modal */}
+      {showPolicyGenerationModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75"
+              aria-hidden="true"
+            />
+
+            <div className="inline-block w-full max-w-6xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-[#13091F] rounded-xl shadow-xl sm:my-8 sm:align-middle sm:p-6">
+              <div className="flex justify-between items-center mb-6 border-b border-[#2E1D4C]/30 pb-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-[#E2DDFF]">
+                    Generate {selectedPolicyType?.title}
+                  </h3>
+                  <p className="mt-1 text-[#B4A5FF]">
+                    Edit and refine your policy using AI assistance
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowPolicyGenerationModal(false)}
+                  className="p-2 text-[#B4A5FF] hover:text-[#E2DDFF] transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex h-[calc(100vh-20rem)] gap-4">
+                {/* Main Editor */}
+                <div className="flex-1 flex flex-col">
+                  {isGenerating ? (
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="w-full max-w-xs mx-auto mb-4 h-2 bg-[#2E1D4C] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-[#B4A5FF] transition-all duration-300"
+                            style={{ width: `${generationProgress}%` }}
+                          />
+                        </div>
+                        <p className="text-[#E2DDFF] mb-2">Generating Policy...</p>
+                        <p className="text-[#B4A5FF] text-sm">This may take a moment</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="flex-1 p-6 bg-[#2E1D4C]/30 rounded-lg overflow-y-auto"
+                      onMouseUp={handleTextSelection}
+                    >
+                      <div
+                        contentEditable
+                        className="min-h-full text-[#E2DDFF] focus:outline-none whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: generatedPolicy }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Editor Controls */}
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-[#2E1D4C]/30">
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={handleRegeneratePolicy}
+                        disabled={isGenerating}
+                        className="flex items-center px-4 py-2 rounded-lg font-medium bg-[#B4A5FF]/20 text-[#E2DDFF] hover:bg-[#B4A5FF]/30 transition-all duration-200 disabled:opacity-50"
+                      >
+                        <FaSync className="mr-2 w-4 h-4" />
+                        Regenerate
+                      </button>
+                      <button
+                        onClick={handleSavePolicy}
+                        disabled={isGenerating || !generatedPolicy}
+                        className="flex items-center px-4 py-2 rounded-lg font-medium bg-[#B4A5FF]/20 text-[#E2DDFF] hover:bg-[#B4A5FF]/30 transition-all duration-200 disabled:opacity-50"
+                      >
+                        <FaCheck className="mr-2 w-4 h-4" />
+                        Save Policy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sidebar */}
+                <div className="w-80 flex flex-col">
+                  {/* Version History */}
+                  <div className="flex-1 p-4 bg-[#2E1D4C]/30 rounded-lg overflow-y-auto">
+                    <h4 className="text-[#E2DDFF] font-medium mb-4">Version History</h4>
+                    <div className="space-y-3">
+                      {versionHistory.map((version) => (
+                        <button
+                          key={version.id}
+                          onClick={() => setGeneratedPolicy(version.content)}
+                          className="w-full p-3 text-left rounded-lg bg-[#2E1D4C]/50 hover:bg-[#2E1D4C]/70 transition-colors"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[#E2DDFF] text-sm capitalize">{version.type}</span>
+                            <span className="text-[#B4A5FF] text-xs">
+                              {new Date(version.timestamp).toLocaleTimeString()}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AI Suggestions */}
+                  {showSuggestions && (
+                    <div className="mt-4 p-4 bg-[#2E1D4C]/30 rounded-lg">
+                      <h4 className="text-[#E2DDFF] font-medium mb-4">AI Suggestions</h4>
+                      <div className="space-y-3">
+                        {suggestions.map((suggestion, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleSuggestionApply(suggestion)}
+                            className="w-full p-3 text-left rounded-lg bg-[#2E1D4C]/50 hover:bg-[#2E1D4C]/70 transition-colors"
+                          >
+                            <p className="text-[#E2DDFF] text-sm">{suggestion}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

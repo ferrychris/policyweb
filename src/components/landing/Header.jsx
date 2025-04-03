@@ -1,9 +1,10 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
-import { Menu, X, ExternalLink } from 'lucide-react';
-import logo from './image/policylogo.png';
+import { Menu, X, ExternalLink } from "lucide-react";
+import logo from "./image/policylogo.png";
+import whiteLogo from "./image/polaicywhite.png";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -18,16 +19,16 @@ const Header = () => {
   return (
     <header className="fixed w-full z-50 bg-black py-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-center">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <img src={logo} alt="FinePolicy Logo" className="h-14 sm:h-16 w-auto" />
+              <img src={whiteLogo} alt="FinePolicy Logo" className="h-20 sm:h-22 w-auto" />
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-10">
+          {/* <div className="hidden lg:flex items-center space-x-10">
           {navigation.map((item) => (
             <Link
               key={item.name}
@@ -61,10 +62,10 @@ const Header = () => {
               <span>The AI Executive</span>
               <ExternalLink className="ml-1 h-5 w-5 text-white" />
             </Link>
-          </div>
+          </div> */}
 
           {/* Mobile menu button */}
-          <div className="lg:hidden">
+          {/* <div className="lg:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 rounded-md text-white hover:text-[#7121ef] transition-colors duration-200"
@@ -75,7 +76,7 @@ const Header = () => {
                 <Menu className="h-6 w-6" />
               )}
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -96,10 +97,10 @@ const Header = () => {
               <div className="flex items-center justify-between">
                 {item.name}
                 {item.hasDropdown && (
-                  <svg 
-                    className="h-5 w-5 text-white" 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 20 20" 
+                  <svg
+                    className="h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
                     fill="currentColor"
                   >
                     <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
@@ -108,7 +109,7 @@ const Header = () => {
               </div>
             </Link>
           ))}
-          
+
           <Link
             to="/executive"
             className="block py-2 text-lg font-medium text-white hover:text-[#7121ef] transition-colors duration-200"

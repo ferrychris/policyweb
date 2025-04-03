@@ -3,7 +3,7 @@ import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import {
   Sun, Moon, Home, Package, User, CreditCard, FileText,
   LogOut, Menu, X, Bell, Settings, BarChart, Star,
-  Activity, Globe
+  Activity, Globe, Users, ChevronRight, ChevronLeft
 } from 'lucide-react';
 import { getUserSubscription, getCurrentUser } from '../../lib/userService';
 import { getPackagesFromDatabase } from '../../lib/policySettings';
@@ -12,6 +12,8 @@ import { useNotifications } from '../../context/NotificationContext';
 import { toast } from 'sonner';
 import logo from '../landing/image/policylogo.png';
 import { cn } from '../../lib/utils';
+import TeamManagement from '../teams/TeamManagement';
+import whiteLogo from '../landing/image/polaicywhite.png';
 
 const DashboardLayout = () => {
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
@@ -23,6 +25,7 @@ const DashboardLayout = () => {
   const { signOut } = useAuth();
   const { notifications, unreadCount, markAllAsRead } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showTeamSidebar, setShowTeamSidebar] = useState(false);
 
   useEffect(() => {
     // Toggle dark mode class on the document
@@ -100,6 +103,12 @@ const DashboardLayout = () => {
       path: '/dashboard/activity'
     },
     {
+      icon: <Users className="w-5 h-5" />,
+      label: 'Team Management',
+      onClick: () => setShowTeamSidebar(true),
+      special: true
+    },
+    {
       icon: <Globe className="w-5 h-5" />,
       label: 'Platforms',
       path: '/dashboard/platforms'
@@ -148,26 +157,40 @@ const DashboardLayout = () => {
           {/* Logo */}
           <div className="flex items-center h-16 px-6 border-b border-[#2E1D4C]/30">
             <Link to="/dashboard" className="flex items-center">
-              <span className="text-2xl font-bold bg-gradient-to-r from-[#B4A5FF] to-[#E2DDFF] text-transparent bg-clip-text">Nova</span>
+              <img src={whiteLogo} alt="FinePolicy Logo" className="h-14 sm:h-16 w-auto" />
             </Link>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 px-3 py-4 space-y-1">
             {menuItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.path}
-                className={cn(
-                  "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150",
-                  location.pathname === item.path
-                    ? "bg-[#2E1D4C] text-[#E2DDFF]"
-                    : "text-[#B4A5FF] hover:bg-[#2E1D4C]/50"
-                )}
-              >
-                {item.icon}
-                <span className="ml-3">{item.label}</span>
-              </Link>
+              item.special ? (
+                <button
+                  key={item.label}
+                  onClick={item.onClick}
+                  className={cn(
+                    "w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150",
+                    "text-[#B4A5FF] hover:bg-[#2E1D4C]/50"
+                  )}
+                >
+                  {item.icon}
+                  <span className="ml-3">{item.label}</span>
+                </button>
+              ) : (
+                <Link
+                  key={item.label}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150",
+                    location.pathname === item.path
+                      ? "bg-[#2E1D4C] text-[#E2DDFF]"
+                      : "text-[#B4A5FF] hover:bg-[#2E1D4C]/50"
+                  )}
+                >
+                  {item.icon}
+                  <span className="ml-3">{item.label}</span>
+                </Link>
+              )
             ))}
           </nav>
 
@@ -186,8 +209,42 @@ const DashboardLayout = () => {
         </div>
       </div>
 
+      {/* Team Management Sidebar */}
+      <div className={cn(
+        "fixed inset-y-0 right-0 z-50 w-80 bg-[#13091F] transform transition-transform duration-200 ease-in-out border-l border-[#2E1D4C]/30",
+        showTeamSidebar ? "translate-x-0" : "translate-x-full"
+      )}>
+        <div className="absolute -left-10 top-1/2 -translate-y-1/2">
+          <button
+            onClick={() => setShowTeamSidebar(!showTeamSidebar)}
+            className="flex items-center justify-center w-10 h-20 bg-[#13091F] border-l border-t border-b border-[#2E1D4C] rounded-l-lg text-[#E2DDFF] hover:text-[#B4A5FF] transition-colors"
+          >
+            {showTeamSidebar ? <ChevronRight className="w-6 h-6" /> : <ChevronLeft className="w-6 h-6" />}
+          </button>
+        </div>
+        <div className="h-full overflow-y-auto p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-[#E2DDFF]">Team Management</h2>
+            <button
+              onClick={() => setShowTeamSidebar(false)}
+              className="p-2 rounded-lg hover:bg-[#2E1D4C]/50 text-[#B4A5FF]"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <TeamManagement
+            userId={user?.id}
+            organizationId={user?.organizationId}
+            onClose={() => setShowTeamSidebar(false)}
+          />
+        </div>
+      </div>
+
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className={cn(
+        "lg:pl-64 transition-all duration-200",
+        showTeamSidebar ? "lg:pr-80" : ""
+      )}>
         {/* Header */}
         <header className="bg-[#13091F] sticky top-0 z-10 border-b border-[#2E1D4C]/30">
           <div className="flex items-center justify-between px-6 py-4">

@@ -219,4 +219,58 @@ export const generatePolicy = async (templateName, customizations, packageType =
   }
 };
 
+/**
+ * Generates AI-powered suggestions for the selected text
+ * @param {string} selectedText - The text selected by the user
+ * @returns {Promise<string[]>} Array of suggested alternatives
+ */
+export const generateSuggestions = async (selectedText) => {
+  try {
+    if (!selectedText || typeof selectedText !== 'string') {
+      throw new Error('Invalid text selection');
+    }
+
+    const response = await withRetry(async () => openai.chat.completions.create({
+      model: OPENAI_CONFIG.defaultModel,
+      messages: [
+        {
+          role: 'system',
+          content: `You are an expert in policy writing and professional communication. 
+          Your task is to provide 3 alternative phrasings for the given text that:
+          1. Maintain the same meaning and intent
+          2. Are clear and professional
+          3. Follow policy writing best practices
+          4. Are appropriate for formal documentation
+          
+          Format your response as a list of 3 alternatives, each on a new line.`
+        },
+        {
+          role: 'user',
+          content: `Please provide 3 alternative phrasings for the following text from a policy document:
+
+"${selectedText}"`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 1000
+    }));
+
+    if (!response?.choices?.[0]?.message?.content) {
+      throw new Error('No suggestions generated');
+    }
+
+    // Parse the response into an array of suggestions
+    const suggestions = response.choices[0].message.content
+      .split('\n')
+      .filter(line => line.trim())
+      .map(line => line.replace(/^\d+\.\s*/, '').trim())
+      .filter(suggestion => suggestion !== selectedText);
+
+    return suggestions.slice(0, 3); // Ensure we return exactly 3 suggestions
+  } catch (error) {
+    console.error('Error generating suggestions:', error);
+    throw new Error('Failed to generate suggestions. Please try again.');
+  }
+};
+
 export default openai;

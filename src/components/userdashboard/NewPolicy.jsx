@@ -1,5 +1,5 @@
 import React from 'react';
-import PolicyGenerator from './components/PolicyGenerator';
+import PolicyGenerator from '../generator/PolicyGenerator';
 
 const NewPolicy = () => {
     return (
