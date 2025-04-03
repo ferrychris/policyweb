@@ -24,7 +24,6 @@ import {
 import Header from './Header';
 import cropedLogo from './image/cropedlogo.png';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-import PackageSection from './PackageSection';
 
 // Import company logos
 import nividaLogo from './image/nivida.png';
@@ -342,9 +341,6 @@ const LandingPage = () => {
                     </div>
                 </div>
             </section>
-
-            {/* Package Section */}
-            <PackageSection />
 
             {/* Upcoming Features Section */}
             <section className="py-20 bg-gradient-to-b from-black via-[#0066ff]/10 to-black">
