@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, ChevronRight, ChevronLeft } from 'lucide-react';
+import { X, Users, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import PolicyEditor from '../editor/PolicyEditor';
 import { toast } from 'sonner';
@@ -7,6 +7,7 @@ import axios from 'axios';
 import TeamManagement from '../teams/TeamManagement';
 import SubscriptionGate from '../common/SubscriptionGate';
 import { FEATURES } from '../../hooks/useSubscription';
+import PolicyTypeSelector from './PolicyTypeSelector';
 
 const PolicyGenerator = ({ userId, packageId, policyTitle, organizationId }) => {
     const [showEditor, setShowEditor] = useState(false);
@@ -19,6 +20,38 @@ const PolicyGenerator = ({ userId, packageId, policyTitle, organizationId }) => 
     });
     const [isSaving, setIsSaving] = useState(false);
     const [showTeamManagement, setShowTeamManagement] = useState(false);
+    const [selectedPackage, setSelectedPackage] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [showPayment, setShowPayment] = useState(false);
+
+    const handlePackageSelect = async (packageType) => {
+        setSelectedPackage(packageType);
+        setIsProcessing(true);
+
+        try {
+            // Here we'll show the payment UI
+            setShowPayment(true);
+
+            // After successful payment:
+            const response = await axios.post('/api/subscriptions/purchase', {
+                packageType,
+                userId,
+                organizationId
+            });
+
+            if (response.data.success) {
+                toast.success('Package purchased successfully!');
+                setShowEditor(true);
+            } else {
+                throw new Error('Failed to process payment');
+            }
+        } catch (error) {
+            console.error('Error processing package selection:', error);
+            toast.error('Failed to process package selection. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     const savePolicy = async (policyContent) => {
         try {
@@ -26,7 +59,7 @@ const PolicyGenerator = ({ userId, packageId, policyTitle, organizationId }) => 
                 title: policyData.title,
                 content: policyContent.content,
                 user_id: policyData.userId,
-                package_id: policyData.packageId,
+                package_id: selectedPackage, // Use the selected package
                 organization_id: policyData.organizationId
             });
 
@@ -72,6 +105,35 @@ const PolicyGenerator = ({ userId, packageId, policyTitle, organizationId }) => 
     const startGeneration = () => {
         setShowEditor(true);
     };
+
+    if (isProcessing) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-[#B4A5FF] mb-4" />
+                <p className="text-white">Processing your selection...</p>
+            </div>
+        );
+    }
+
+    if (showTeamManagement) {
+        return (
+            <TeamManagement
+                organizationId={organizationId}
+                onClose={() => setShowTeamManagement(false)}
+            />
+        );
+    }
+
+    if (!selectedPackage || !showEditor) {
+        return (
+            <div className="w-full h-full bg-[#13091F] p-6">
+                <PolicyTypeSelector
+                    onSelect={handlePackageSelect}
+                    currentSubscription={null}
+                />
+            </div>
+        );
+    }
 
     return (
         <SubscriptionGate feature={FEATURES.POLICY_GENERATION}>

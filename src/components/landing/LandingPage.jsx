@@ -206,18 +206,20 @@ const LandingPage = () => {
                                     </span>
                                 </motion.div>
 
-                                {/* <motion.div
+                                <motion.div
                                     whileHover={{ scale: 1.02 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                            >
-                                    <span className="inline-flex items-center px-6 py-3 rounded-lg bg-transparent border border-[#4B3B7C] text-white text-sm sm:text-base font-semibold cursor-not-allowed group relative overflow-hidden">
+                                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                >
+                                    <Link
+                                        to="/login"
+                                        className="inline-flex items-center px-6 py-3 rounded-lg bg-green-600 text-white text-sm sm:text-base font-semibold hover:bg-green-700 transition-colors relative overflow-hidden group"
+                                    >
                                         <div className="flex items-center relative z-10">
-                                            Policy Assessment
-                                            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2 transition-transform group-hover:translate-x-1" />
+                                            Temp Login Access
+                                            <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
                                         </div>
-                                        <div className="absolute inset-0 bg-[#4B3B7C] opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                                    </span>
-                                </motion.div> */}
+                                    </Link>
+                                </motion.div>
                             </div>
 
                             {/* Trust Indicators */}

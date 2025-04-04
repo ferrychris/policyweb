@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabaseClient';
 import stripePromise, { createSubscription } from '../../lib/stripe';
 import { Elements } from '@stripe/react-stripe-js';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { FaTimes } from 'react-icons/fa';
 
 const PaymentForm = ({ clientSecret, onSuccess, onError }) => {
     const stripe = useStripe();
@@ -65,9 +66,14 @@ const PackageSection = () => {
     const [selectedPackage, setSelectedPackage] = useState(null);
     const [paymentIntent, setPaymentIntent] = useState(null);
     const [subscribing, setSubscribing] = useState(false);
+    const [showPackageModal, setShowPackageModal] = useState(false);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedPolicyType, setSelectedPolicyType] = useState(null);
+    const [policyTypes, setPolicyTypes] = useState([]);
 
     useEffect(() => {
         fetchPackages();
+        fetchPolicyTypes();
     }, []);
 
     const fetchPackages = async () => {
@@ -90,6 +96,21 @@ const PackageSection = () => {
             setError(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchPolicyTypes = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('policy_types')
+                .select('*');
+
+            if (error) throw error;
+
+            setPolicyTypes(data);
+        } catch (err) {
+            console.error('Error processing policy types:', err);
+            setError(err.message);
         }
     };
 
@@ -122,6 +143,27 @@ const PackageSection = () => {
     const handlePaymentError = (message) => {
         setError(message);
         setPaymentIntent(null);
+    };
+
+    const handleGeneratePolicy = () => {
+        setShowPackageModal(true);
+    };
+
+    const handlePolicyTypeSelect = async (typeId) => {
+        const selectedType = policyTypes.find(type => type.id === typeId);
+        if (selectedType) {
+            setSelectedPolicyType(selectedType);
+            setShowPackageModal(false);
+
+            // Show package selection before details
+            setShowPackageModal(true);
+        }
+    };
+
+    const handlePackageSelect = async (packageType) => {
+        setSelectedPackage(packageType);
+        setShowPackageModal(false);
+        setShowDetailsModal(true);
     };
 
     if (loading) {
@@ -216,6 +258,38 @@ const PackageSection = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Package Selection Modal */}
+            {showPackageModal && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                        <div
+                            className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75"
+                            aria-hidden="true"
+                        />
+
+                        <div className="inline-block w-full max-w-6xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-[#13091F] rounded-xl shadow-xl sm:my-8 sm:align-middle sm:p-6">
+                            <div className="flex justify-between items-center mb-6 border-b border-[#2E1D4C]/30 pb-4">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-[#E2DDFF]">Select Package</h3>
+                                    <p className="mt-1 text-[#B4A5FF]">Choose a package to continue</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowPackageModal(false)}
+                                    className="p-2 text-[#B4A5FF] hover:text-[#E2DDFF] transition-colors"
+                                >
+                                    <FaTimes className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <PolicyTypeSelector
+                                onSelect={handlePackageSelect}
+                                currentSubscription={null}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     );
 };

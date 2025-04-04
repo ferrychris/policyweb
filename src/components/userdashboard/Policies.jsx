@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import { getUserPoliciesCurrent, updateUserPolicy, deleteUserPolicy } from '../../lib/userService';
 import { motion, AnimatePresence } from 'framer-motion';
-import { generatePolicy, generateSuggestions } from '../../lib/openai';
 import { toast } from 'sonner';
 import {
   FaEdit,
@@ -43,6 +42,16 @@ import {
 } from 'react-icons/fa';
 import { cn, themeClasses, gradientClasses } from '../../lib/utils';
 import PolicyEditor from '../editor/PolicyEditor';
+import { Elements } from '@stripe/react-stripe-js';
+import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import stripePromise from '../../lib/stripe';
+import axios from 'axios';
+import { Loader2 } from 'lucide-react';
+import OpenAI from 'openai';
+import { invokeScrapeFunction, getScrapedData, saveScrapedData } from '../../utils/supabaseClient';
+import { enhancePolicyGeneration } from '../../utils/policyEnhancer';
+
+const API_KEY = '2436|zmpfj0j2Jt87Hn220JB6X7MUjhgTbMWo2QtfVtX3';
 
 const policyTypes = [
   {
@@ -177,6 +186,94 @@ const regulations = {
   ]
 };
 
+const dropdownStyles = {
+  select: "w-full pl-10 pr-4 py-2 bg-[#2E1D4C]/30 border border-[#2E1D4C]/50 rounded-lg text-[#E2DDFF] focus:border-[#B4A5FF]/50 focus:outline-none appearance-none",
+  option: "bg-[#2E1D4C] text-[#E2DDFF] hover:bg-[#B4A5FF]/20",
+  optionSelected: "bg-[#B4A5FF]/20"
+};
+
+const openai = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true
+});
+
+const PaymentForm = ({ clientSecret, packageDetails, onSuccess, onCancel }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [processing, setProcessing] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setProcessing(true);
+    try {
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/dashboard/policies`,
+        },
+        redirect: 'if_required',
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else if (paymentIntent.status === 'succeeded') {
+        onSuccess();
+      }
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <div className="p-6">
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold text-[#E2DDFF] mb-2">Order Summary</h3>
+        <div className="bg-[#2E1D4C]/30 p-4 rounded-lg">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[#B4A5FF]">Package:</span>
+            <span className="text-[#E2DDFF] font-medium">{packageDetails.name}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[#B4A5FF]">Price:</span>
+            <span className="text-[#E2DDFF] font-medium">${packageDetails.price}</span>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <PaymentElement />
+        <div className="flex justify-end gap-4 mt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 text-[#B4A5FF] hover:text-[#E2DDFF] transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={!stripe || processing}
+            className="px-6 py-2 bg-[#B4A5FF]/20 text-[#E2DDFF] rounded-lg hover:bg-[#B4A5FF]/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            {processing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#E2DDFF] mr-2" />
+                Processing...
+              </>
+            ) : (
+              'Pay Now'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
 const Policies = () => {
   const navigate = useNavigate();
   const [policies, setPolicies] = useState([]);
@@ -217,6 +314,13 @@ const Policies = () => {
   const [selectedText, setSelectedText] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [selectedPackageDetails, setSelectedPackageDetails] = useState(null);
+  const [clientSecret, setClientSecret] = useState(null);
+  const [countries, setCountries] = useState([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const websiteInputRef = useRef(null);
+  const [urlValidationError, setUrlValidationError] = useState(null);
 
   useEffect(() => {
     // Load user policies
@@ -234,6 +338,41 @@ const Policies = () => {
 
     loadPolicies();
   }, []);
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      if (showDetailsModal) {
+        setLoadingCountries(true);
+        try {
+          const response = await axios.get('https://restfulcountries.com/api/v1/countries', {
+            headers: {
+              'Authorization': `Bearer ${API_KEY}`,
+              'Accept': 'application/json'
+            }
+          });
+
+          const sortedCountries = response.data.data
+            .map(country => ({
+              name: country.name,
+              code: country.iso2,
+              flag: country.emoji,
+              region: country.region,
+              capital: country.capital
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+          setCountries(sortedCountries);
+        } catch (error) {
+          console.error('Error fetching countries:', error);
+          toast.error('Failed to load countries. Please try again.');
+        } finally {
+          setLoadingCountries(false);
+        }
+      }
+    };
+
+    fetchCountries();
+  }, [showDetailsModal]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -325,7 +464,7 @@ const Policies = () => {
     });
   };
 
-  const handleGeneratePolicy = () => {
+  const handleGeneratePolicy = async () => {
     setShowPolicyTypeModal(true);
   };
 
@@ -341,7 +480,8 @@ const Policies = () => {
   const handleDetailsSubmit = (e) => {
     e.preventDefault();
     if (!organizationDetails.companyName || !organizationDetails.website ||
-      !organizationDetails.email || !organizationDetails.country) {
+      !organizationDetails.email /* || !organizationDetails.country */) { // Country might not be mandatory here
+      toast.error('Please fill in all required organization details.');
       return;
     }
     setShowDetailsModal(false);
@@ -352,8 +492,21 @@ const Policies = () => {
     const { name, value } = e.target;
     setOrganizationDetails(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
+      // If country is selected, also store the full country data
+      ...(name === 'country' && countries.length > 0 && {
+        countryData: countries.find(c => c.code === value)
+      }),
+      // If the website field is changed manually, clear the stored websiteData 
+      ...(name === 'website' && {
+        website: value,
+        websiteData: null
+      })
     }));
+    // Clear validation error if user types in website field
+    if (name === 'website') {
+      setUrlValidationError(null);
+    }
   };
 
   const handleRegulationToggle = (regId) => {
@@ -529,6 +682,147 @@ const Policies = () => {
     });
     setGeneratedPolicy('');
     setVersionHistory([]);
+  };
+
+  const handlePackageSelect = async (packageType) => {
+    // Set the package details based on the selection
+    const packageDetails = {
+      name: packageType === 'basic' ? 'Basic Package' :
+        packageType === 'professional' ? 'Professional Package' : 'Premium Package',
+      price: packageType === 'basic' ? 900 :
+        packageType === 'professional' ? 1500 : 3000,
+      features: packageType === 'basic' ? [
+        "AI Ethics Policy",
+        "AI Risk Management Policy",
+        "AI Data Governance Policy"
+      ] : packageType === 'professional' ? [
+        "All Basic Policies",
+        "AI Security Policy",
+        "Model Management Policy",
+        "Human Oversight Policy",
+        "AI Compliance Policy",
+        "Use Case Evaluation Policy"
+      ] : [
+        "All Professional Policies",
+        "Procurement & Vendor Policy",
+        "Responsible AI Deployment",
+        "Training & Capability Policy",
+        "Incident Response Policy",
+        "+9 More Specialized Policies"
+      ]
+    };
+
+    setSelectedPackageDetails(packageDetails);
+    setShowConfirmationModal(true);
+  };
+
+  const handleConfirmPackage = async () => {
+    try {
+      // Create payment intent
+      const response = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: selectedPackageDetails.price * 100, // Convert to cents
+          packageType: selectedPackageDetails.name
+        })
+      });
+
+      const data = await response.json();
+      if (data.clientSecret) {
+        setClientSecret(data.clientSecret);
+      } else {
+        throw new Error('Failed to create payment intent');
+      }
+    } catch (error) {
+      toast.error('Failed to initialize payment. Please try again.');
+      console.error('Payment initialization error:', error);
+    }
+  };
+
+  const handlePaymentSuccess = () => {
+    toast.success('Payment successful! You can now create your policy.');
+    setShowConfirmationModal(false);
+    setClientSecret(null);
+    setSelectedPackageDetails(null);
+    // Continue with policy creation
+    setShowPolicyTypeModal(true);
+  };
+
+  const analyzeWebsiteContent = async (content) => {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: "You are an AI assistant that analyzes website content to extract organization information. Return the response as a JSON object with the following fields: companyName, industry, description, aiMaturityIndicators (array of strings), size (small/medium/large), techStack (array of strings), and marketFocus."
+          },
+          {
+            role: "user",
+            content: `Analyze this website content and extract relevant information: ${content}`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1000
+      });
+
+      return JSON.parse(response.choices[0].message.content);
+    } catch (error) {
+      console.error('Error analyzing website content:', error);
+      throw error;
+    }
+  };
+
+  const scrapeWebsite = async (url) => {
+    try {
+      const response = await axios.post('/api/scrape-website', { url }, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.status !== 200) {
+        throw new Error(`Failed to fetch website content: ${response.statusText}`);
+      }
+
+      return response.data.content;
+    } catch (error) {
+      console.error('Error details:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.error || 'Failed to fetch website content');
+    }
+  };
+
+  const handleConfirmWebsiteUrl = (e) => {
+    e.preventDefault();
+    let websiteUrl = websiteInputRef.current?.value?.trim();
+
+    if (!websiteUrl) {
+      setUrlValidationError('Please enter a website URL');
+      toast.error('Please enter a website URL');
+      return;
+    }
+
+    // Prepend https:// if scheme is missing
+    if (!/^https?:\/\//i.test(websiteUrl)) {
+      websiteUrl = 'https://' + websiteUrl;
+    }
+
+    // Basic URL validation
+    try {
+      const validatedUrl = new URL(websiteUrl);
+      // Update the input field visually and state with the validated/formatted URL
+      if (websiteInputRef.current) websiteInputRef.current.value = validatedUrl.href;
+      setOrganizationDetails(prev => ({ ...prev, website: validatedUrl.href }));
+      setUrlValidationError(null); // Clear any previous error
+      toast.success('Website URL confirmed!');
+    } catch (error) {
+      setUrlValidationError('Please enter a valid URL');
+      toast.error('Please enter a valid URL');
+      // Optionally clear the state value if invalid
+      // setOrganizationDetails(prev => ({ ...prev, website: '' }));
+    }
+    // No async scraping call here anymore
   };
 
   return (
@@ -708,7 +1002,7 @@ const Policies = () => {
         </div>
       )}
 
-      {/* Organization Details Modal */}
+      {/* Organization Details Modal - Updated for manual URL confirmation */}
       {showDetailsModal && selectedPolicyType && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -721,10 +1015,10 @@ const Policies = () => {
               <div className="flex justify-between items-center mb-6 border-b border-[#2E1D4C]/30 pb-4">
                 <div>
                   <h3 className="text-2xl font-bold text-[#E2DDFF]">
-                    Select Template for {selectedPolicyType?.title}
+                    Provide Details for {selectedPolicyType?.title}
                   </h3>
                   <p className="mt-1 text-[#B4A5FF]">
-                    Please provide organization details and select template preferences
+                    Enter organization details manually.
                   </p>
                 </div>
                 <button
@@ -743,6 +1037,7 @@ const Policies = () => {
                   <h4 className="text-lg font-semibold text-[#E2DDFF] mb-4">1. Organization Details</h4>
 
                   <div className="space-y-4">
+                    {/* Company Name Input */}
                     <div>
                       <label className="block text-sm font-medium text-[#B4A5FF] mb-2">
                         Company Name*
@@ -760,24 +1055,40 @@ const Policies = () => {
                       </div>
                     </div>
 
+                    {/* Website Input Section - Manual Confirmation */}
                     <div>
                       <label className="block text-sm font-medium text-[#B4A5FF] mb-2">
-                        Website*
+                        Website* (Enter URL and click Confirm)
                       </label>
-                      <div className="relative">
-                        <FaGlobe className="absolute left-3 top-3 text-[#B4A5FF]" />
-                        <input
-                          type="url"
-                          name="website"
-                          value={organizationDetails.website}
-                          onChange={handleInputChange}
-                          placeholder="www.example.com"
-                          className="w-full pl-10 pr-4 py-2 bg-[#2E1D4C]/30 border border-[#2E1D4C]/50 rounded-lg text-[#E2DDFF] focus:border-[#B4A5FF]/50 focus:outline-none"
-                          required
-                        />
+                      <div className="flex gap-2 items-start">
+                        <div className="relative flex-grow">
+                          <FaGlobe className="absolute left-3 top-3 text-[#B4A5FF]" />
+                          <input
+                            type="text"
+                            name="website"
+                            ref={websiteInputRef}
+                            defaultValue={organizationDetails.website}
+                            onChange={handleInputChange}
+                            placeholder="e.g., example.com or www.example.com"
+                            className="w-full pl-10 pr-4 py-2 bg-[#2E1D4C]/30 border border-[#2E1D4C]/50 rounded-lg text-[#E2DDFF] focus:border-[#B4A5FF]/50 focus:outline-none"
+                            required
+                          />
+                        </div>
+                        <button
+                          onClick={handleConfirmWebsiteUrl} // Changed function
+                          type="button" // Prevent form submission
+                          className={`px-4 py-2 rounded-md shrink-0 bg-[#B4A5FF]/20 hover:bg-[#B4A5FF]/30 text-[#E2DDFF] flex items-center justify-center`}
+                          style={{ height: '42px' }}
+                        >
+                          Confirm URL
+                        </button>
                       </div>
+                      {urlValidationError && (
+                        <p className="mt-2 text-sm text-red-600">{urlValidationError}</p>
+                      )}
                     </div>
 
+                    {/* Email Input */}
                     <div>
                       <label className="block text-sm font-medium text-[#B4A5FF] mb-2">
                         Email*
@@ -796,23 +1107,7 @@ const Policies = () => {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-[#B4A5FF] mb-2">
-                        Country*
-                      </label>
-                      <div className="relative">
-                        <FaMapMarkerAlt className="absolute left-3 top-3 text-[#B4A5FF]" />
-                        <input
-                          type="text"
-                          name="country"
-                          value={organizationDetails.country}
-                          onChange={handleInputChange}
-                          className="w-full pl-10 pr-4 py-2 bg-[#2E1D4C]/30 border border-[#2E1D4C]/50 rounded-lg text-[#E2DDFF] focus:border-[#B4A5FF]/50 focus:outline-none"
-                          required
-                        />
-                      </div>
-                    </div>
-
+                    {/* Industry, AI Maturity, Effective Date Inputs */}
                     <div>
                       <label className="block text-sm font-medium text-[#B4A5FF] mb-2">
                         Industry
@@ -823,11 +1118,17 @@ const Policies = () => {
                           name="industry"
                           value={organizationDetails.industry}
                           onChange={handleInputChange}
-                          className="w-full pl-10 pr-4 py-2 bg-[#2E1D4C]/30 border border-[#2E1D4C]/50 rounded-lg text-[#E2DDFF] focus:border-[#B4A5FF]/50 focus:outline-none"
+                          className={dropdownStyles.select}
                         >
-                          <option value="">Select Industry</option>
+                          <option value="" className={dropdownStyles.option}>Select Industry</option>
                           {industries.map(industry => (
-                            <option key={industry} value={industry}>{industry}</option>
+                            <option
+                              key={industry}
+                              value={industry}
+                              className={dropdownStyles.option}
+                            >
+                              {industry}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -843,11 +1144,17 @@ const Policies = () => {
                           name="aiMaturityLevel"
                           value={organizationDetails.aiMaturityLevel}
                           onChange={handleInputChange}
-                          className="w-full pl-10 pr-4 py-2 bg-[#2E1D4C]/30 border border-[#2E1D4C]/50 rounded-lg text-[#E2DDFF] focus:border-[#B4A5FF]/50 focus:outline-none"
+                          className={dropdownStyles.select}
                         >
-                          <option value="">Select Maturity Level</option>
+                          <option value="" className={dropdownStyles.option}>Select Maturity Level</option>
                           {aiMaturityLevels.map(level => (
-                            <option key={level} value={level}>{level}</option>
+                            <option
+                              key={level}
+                              value={level}
+                              className={dropdownStyles.option}
+                            >
+                              {level}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -871,6 +1178,7 @@ const Policies = () => {
                   </div>
                 </div>
 
+                {/* Template Style Selection */}
                 <div>
                   <h4 className="text-lg font-semibold text-[#E2DDFF] mb-4">2. Select Template Style</h4>
                   <div className="space-y-4">
@@ -900,7 +1208,7 @@ const Policies = () => {
                       type="submit"
                       className="w-full mt-6 px-6 py-3 bg-[#B4A5FF]/20 text-[#E2DDFF] rounded-lg font-medium hover:bg-[#B4A5FF]/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Customize Template
+                      Continue to Regulations
                     </button>
                   </div>
                 </div>
@@ -1410,8 +1718,83 @@ const Policies = () => {
           </div>
         </div>
       )}
+
+      {/* Package Confirmation Modal */}
+      {showConfirmationModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" aria-hidden="true" />
+
+            <div className="inline-block w-full max-w-xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-[#13091F] rounded-xl shadow-xl sm:my-8 sm:align-middle sm:p-6">
+              {!clientSecret ? (
+                <>
+                  <div className="flex justify-between items-center mb-6 border-b border-[#2E1D4C]/30 pb-4">
+                    <div>
+                      <h3 className="text-2xl font-bold text-[#E2DDFF]">Confirm Package Selection</h3>
+                      <p className="mt-1 text-[#B4A5FF]">Review your selected package details</p>
+                    </div>
+                    <button
+                      onClick={() => setShowConfirmationModal(false)}
+                      className="p-2 text-[#B4A5FF] hover:text-[#E2DDFF] transition-colors"
+                    >
+                      <FaTimes className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <h4 className="text-lg font-semibold text-[#E2DDFF] mb-2">{selectedPackageDetails.name}</h4>
+                      <p className="text-2xl font-bold text-[#E2DDFF]">${selectedPackageDetails.price}</p>
+                    </div>
+
+                    <div>
+                      <h5 className="text-[#B4A5FF] mb-2">Included Features:</h5>
+                      <ul className="space-y-2">
+                        {selectedPackageDetails.features.map((feature, index) => (
+                          <li key={index} className="flex items-center text-[#E2DDFF]">
+                            <FaCheck className="w-5 h-5 text-[#B4A5FF] mr-2" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-4">
+                    <button
+                      onClick={() => setShowConfirmationModal(false)}
+                      className="px-4 py-2 text-[#B4A5FF] hover:text-[#E2DDFF] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleConfirmPackage}
+                      className="px-6 py-2 bg-[#B4A5FF]/20 text-[#E2DDFF] rounded-lg hover:bg-[#B4A5FF]/30 transition-colors"
+                    >
+                      Proceed to Payment
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <Elements stripe={stripePromise} options={{ clientSecret }}>
+                  <PaymentForm
+                    clientSecret={clientSecret}
+                    packageDetails={selectedPackageDetails}
+                    onSuccess={handlePaymentSuccess}
+                    onCancel={() => {
+                      setShowConfirmationModal(false);
+                      setClientSecret(null);
+                    }}
+                  />
+                </Elements>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Policies;
+
