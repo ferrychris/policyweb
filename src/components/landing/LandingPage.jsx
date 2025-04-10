@@ -194,7 +194,7 @@ const LandingPage = () => {
                                 >
                                     <span className="inline-flex items-center px-6 py-3 rounded-lg bg-[#4B3B7C] text-white text-sm sm:text-base font-semibold cursor-not-allowed overflow-hidden group relative">
                                         <div className="flex items-center relative z-10">
-                                            Get Started
+                                Get Started
                                             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2 transition-transform group-hover:translate-x-1" />
                                         </div>
                                         <motion.span
@@ -210,7 +210,7 @@ const LandingPage = () => {
                                     whileHover={{ scale: 1.02 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                 >
-                                    <Link
+                            <Link
                                         to="/login"
                                         className="inline-flex items-center px-6 py-3 rounded-lg bg-green-600 text-white text-sm sm:text-base font-semibold hover:bg-green-700 transition-colors relative overflow-hidden group"
                                     >
@@ -218,7 +218,7 @@ const LandingPage = () => {
                                             Temp Login Access
                                             <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
                                         </div>
-                                    </Link>
+                            </Link>
                                 </motion.div>
                             </div>
 
@@ -624,8 +624,8 @@ const LandingPage = () => {
                                     className="flex items-center"
                                     whileHover={{ scale: 1.05 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                                >
-                                    Create Your Account
+                            >
+                                Create Your Account
                                     <motion.div
                                         className="ml-2"
                                         initial={{ x: 0 }}

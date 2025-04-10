@@ -294,6 +294,15 @@ const DashboardLayout = () => {
               <button className="hidden md:flex items-center px-4 py-2 text-sm font-medium text-[#E2DDFF] bg-[#2E1D4C] rounded-lg hover:bg-[#2E1D4C]/80 transition-colors">
                 <span>Export Data</span>
               </button>
+              
+              {/* Logout Button - More prominent */}
+              <button
+                onClick={handleSignOut}
+                className="flex items-center px-4 py-2 text-sm font-medium text-[#E2DDFF] bg-[#B4A5FF]/20 rounded-lg hover:bg-[#B4A5FF]/30 transition-colors"
+              >
+                <LogOut className="w-5 h-5 mr-2" />
+                <span>Logout</span>
+              </button>
             </div>
           </div>
         </header>

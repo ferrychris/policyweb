@@ -1,166 +1,159 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Check, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { cn } from '../../lib/utils';
+import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { pricingData } from '../../data/pricingData';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 const Pricing = () => {
-    const packages = [
-        {
-            name: 'Basic',
-            price: '$29',
-            period: 'month',
-            description: 'Perfect for small businesses',
-            features: [
-                'Up to 5 policies',
-                'Basic policy templates',
-                'Email support',
-                'Basic analytics',
-                'Standard export formats'
-            ],
-            buttonText: 'Get Started',
-            buttonLink: '/register',
-            popular: false
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [billingCycle, setBillingCycle] = useState('monthly');
+
+  const handleCheckout = async (packageId, priceId) => {
+    if (!user) {
+      toast.error('Please sign in to purchase a package');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_SUPABASE_URL}/functions/v1/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.access_token}`,
         },
-        {
-            name: 'Professional',
-            price: '$79',
-            period: 'month',
-            description: 'Ideal for growing businesses',
-            features: [
-                'Unlimited policies',
-                'Advanced policy templates',
-                'Priority email support',
-                'Advanced analytics',
-                'All export formats',
-                'Custom branding',
-                'Team collaboration',
-                'API access'
-            ],
-            buttonText: 'Get Started',
-            buttonLink: '/register',
-            popular: true
-        },
-        {
-            name: 'Enterprise',
-            price: 'Custom',
-            period: 'month',
-            description: 'For large organizations',
-            features: [
-                'Everything in Professional',
-                'Dedicated account manager',
-                'Custom policy templates',
-                '24/7 phone support',
-                'Custom integrations',
-                'SLA guarantees',
-                'Advanced security features',
-                'Custom training'
-            ],
-            buttonText: 'Contact Sales',
-            buttonLink: '/contact',
-            popular: false
-        }
-    ];
+        body: JSON.stringify({
+          priceId,
+          packageId,
+        }),
+      });
 
-    return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex justify-end mb-8">
-                    <Link
-                        to="/dashboard/new-policy"
-                        className={cn(
-                            "flex items-center gap-2 px-6 py-3 rounded-lg",
-                            "bg-gradient-to-r from-indigo-600 to-purple-600",
-                            "text-white font-medium",
-                            "hover:from-indigo-700 hover:to-purple-700",
-                            "transition-all duration-200 shadow-md hover:shadow-lg"
-                        )}
-                    >
-                        <Plus className="w-5 h-5" />
-                        <span>Create New Policy</span>
-                    </Link>
-                </div>
+      const data = await response.json();
 
-                <div className="text-center">
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="text-4xl font-extrabold text-gray-900 dark:text-white sm:text-5xl sm:tracking-tight lg:text-6xl"
-                    >
-                        Simple, transparent pricing
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        className="mt-5 max-w-xl mx-auto text-xl text-gray-500 dark:text-gray-400"
-                    >
-                        Choose the perfect plan for your business needs
-                    </motion.p>
-                </div>
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
 
-                <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0 xl:grid-cols-3">
-                    {packages.map((pkg, index) => (
-                        <motion.div
-                            key={pkg.name}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}
-                            className={`border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm divide-y divide-gray-200 dark:divide-gray-700 ${pkg.popular ? 'ring-2 ring-indigo-500' : ''
-                                }`}
-                        >
-                            <div className="p-6">
-                                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white sm:text-3xl">
-                                    {pkg.name}
-                                </h2>
-                                <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                                    {pkg.description}
-                                </p>
-                                <p className="mt-8">
-                                    <span className="text-4xl font-extrabold text-gray-900 dark:text-white">
-                                        {pkg.price}
-                                    </span>
-                                    <span className="text-base font-medium text-gray-500 dark:text-gray-400">
-                                        /{pkg.period}
-                                    </span>
-                                </p>
-                                <Link
-                                    to={pkg.buttonLink}
-                                    className={`mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium ${pkg.popular
-                                        ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                        : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:hover:bg-indigo-900/30'
-                                        }`}
-                                >
-                                    {pkg.buttonText}
-                                </Link>
-                                {pkg.popular && (
-                                    <p className="mt-6 text-sm text-indigo-600 dark:text-indigo-400 text-center">
-                                        Most popular choice
-                                    </p>
-                                )}
-                            </div>
-                            <div className="pt-6 pb-8 px-6">
-                                <h3 className="text-xs font-semibold text-gray-900 dark:text-white tracking-wide uppercase">
-                                    What's included
-                                </h3>
-                                <ul className="mt-6 space-y-4">
-                                    {pkg.features.map((feature) => (
-                                        <li key={feature} className="flex space-x-3">
-                                            <Check className="flex-shrink-0 h-5 w-5 text-green-500" />
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                                                {feature}
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error(error.message || 'Failed to initiate checkout');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            Choose Your Package
+          </h2>
+          <p className="mt-4 text-lg text-gray-500">
+            Select the package that best fits your organization's needs
+          </p>
         </div>
-    );
+
+        {/* Billing Cycle Toggle */}
+        <div className="flex justify-center mt-8">
+          <div className="bg-white rounded-lg p-1 shadow-sm">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-4 py-2 rounded-md ${
+                billingCycle === 'monthly'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingCycle('yearly')}
+              className={`px-4 py-2 rounded-md ${
+                billingCycle === 'yearly'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Yearly (Save 20%)
+            </button>
+          </div>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="mt-12 grid gap-8 lg:grid-cols-3">
+          {pricingData.map((tier) => (
+            <div
+              key={tier.id}
+              className={`bg-white rounded-lg shadow-lg overflow-hidden ${
+                tier.color === 'blue'
+                  ? 'border-blue-500'
+                  : tier.color === 'yellow'
+                  ? 'border-yellow-500'
+                  : 'border-red-500'
+              }`}
+            >
+              <div className="px-6 py-8">
+                <h3 className="text-2xl font-bold text-gray-900">{tier.name}</h3>
+                <p className="mt-4 text-gray-500">{tier.description}</p>
+                <div className="mt-6">
+                  <span className="text-4xl font-extrabold text-gray-900">
+                    ${tier.price[billingCycle]}
+                  </span>
+                  <span className="text-gray-500">/{billingCycle}</span>
+                </div>
+                <ul className="mt-6 space-y-4">
+                  {tier.features.map((feature, index) => (
+                    <li key={index} className="flex items-start">
+                      <svg
+                        className="h-6 w-6 text-green-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      <span className="ml-3 text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() =>
+                    handleCheckout(
+                      tier.id,
+                      tier.stripePriceIds[billingCycle]
+                    )
+                  }
+                  disabled={isLoading}
+                  className={`mt-8 w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white ${
+                    tier.color === 'blue'
+                      ? 'bg-blue-600 hover:bg-blue-700'
+                      : tier.color === 'yellow'
+                      ? 'bg-yellow-600 hover:bg-yellow-700'
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    'Get Started'
+                  )}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Pricing; 

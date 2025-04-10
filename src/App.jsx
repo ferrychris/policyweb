@@ -7,7 +7,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import DashboardLayout from './components/userdashboard/DashboardLayout';
 import LandingPage from './components/landing/LandingPage';
 import Login from './components/auth/login';
-import Register from './components/auth/register';
+import Register from './components/auth/register.tsx';
 import Pricing from './components/pricing/Pricing';
 import DashboardHome from './components/userdashboard/DashboardHome';
 import Policies from './components/userdashboard/Policies';
@@ -19,6 +19,7 @@ import PolicyWizard from './components/userdashboard/PolicyWizard';
 import NewPolicy from './components/userdashboard/NewPolicy';
 import Settings from './components/settings/Settings';
 import { cn } from './lib/utils';
+import Checkout from './components/pricing/Checkout';
 
 // Component to conditionally render Toaster based on notification settings
 const NotificationToaster = () => {
@@ -40,6 +41,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/checkout/:packageId" element={<Checkout />} />
 
             {/* Protected Dashboard Routes */}
             <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
