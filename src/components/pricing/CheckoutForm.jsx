@@ -58,7 +58,7 @@ const CheckoutForm = ({ packageDetails, onSuccess, onError }) => {
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/dashboard/policies?subscription=success&name=${encodeURIComponent(packageDetails.name)}`,
+          return_url: `${window.location.origin}/payment-success?success=true&tier=${packageDetails.id}&name=${encodeURIComponent(packageDetails.name)}`,
         },
       });
 

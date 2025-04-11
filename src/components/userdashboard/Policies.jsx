@@ -1479,8 +1479,100 @@ const Policies = () => {
       return;
     }
 
-    // Instead of creating a checkout session here, navigate to our checkout page
-    navigate(`/checkout?tier=${tierId}&cycle=${selectedBillingCycle}&name=${encodeURIComponent(tierName)}`);
+    setIsProcessingPayment(true);
+    
+    try {
+      // Get corresponding Stripe priceId
+      const stripePriceIds = {
+        1: { // Foundational Package
+          monthly: 'price_1OCn2xH2eZvKYlo2bQYoJCDF',
+          yearly: 'price_1OCn2xH2eZvKYlo2CbX9XsLu'
+        },
+        2: { // Operational Package
+          monthly: 'price_1OCn3SH2eZvKYlo2ZKrpoNtd',
+          yearly: 'price_1OCn3SH2eZvKYlo231Sd3XYZ'
+        },
+        3: { // Strategic Package
+          monthly: 'price_1OCn4AH2eZvKYlo22HZmRnXl',
+          yearly: 'price_1OCn4AH2eZvKYlo2RofPzDCJ'
+        }
+      };
+
+      const priceId = stripePriceIds[tierId]?.[selectedBillingCycle];
+      
+      if (!priceId) {
+        throw new Error('Invalid pricing configuration');
+      }
+
+      // First try Supabase Edge Function
+      try {
+        const { data, error } = await supabase.functions.invoke('stripe-payment', {
+          body: {
+            priceId: priceId,
+            packageId: tierId,
+            packageName: tierName,
+            customerEmail: user.email,
+            billingCycle: selectedBillingCycle
+          }
+        });
+
+        if (error) {
+          console.error('Supabase function error:', error);
+          throw new Error(`Function error: ${error.message}`);
+        }
+        
+        if (data?.url) {
+          // Redirect to Stripe Checkout
+          window.location.href = data.url;
+          return;
+        }
+      } catch (fnError) {
+        console.error('Edge function invocation failed, trying direct fetch:', fnError);
+        
+        // Try direct fetch to the function URL
+        try {
+          // Get the session token
+          const { data: sessionData } = await supabase.auth.getSession();
+          const accessToken = sessionData?.session?.access_token || '';
+          
+          const response = await fetch('https://vgedgxfxhiiilzqydfxu.supabase.co/functions/v1/stripe-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+              priceId: priceId,
+              packageId: tierId,
+              packageName: tierName,
+              customerEmail: user.email,
+              billingCycle: selectedBillingCycle
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          
+          const responseData = await response.json();
+          
+          if (responseData?.url) {
+            window.location.href = responseData.url;
+            return;
+          }
+        } catch (fetchError) {
+          console.error('Direct fetch to edge function failed:', fetchError);
+        }
+      }
+
+      // Fallback - Use the checkout page
+      navigate(`/checkout?tier=${tierId}&cycle=${selectedBillingCycle}&name=${encodeURIComponent(tierName)}`);
+      
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      toast.error(`Payment setup failed: ${error.message}`);
+      setIsProcessingPayment(false);
+    }
   };
 
   // Check URL for subscription status on component mount

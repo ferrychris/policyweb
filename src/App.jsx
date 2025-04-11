@@ -20,6 +20,7 @@ import NewPolicy from './components/userdashboard/NewPolicy';
 import Settings from './components/settings/Settings';
 import { cn } from './lib/utils';
 import Checkout from './components/pricing/Checkout';
+import PaymentSuccess from './components/pricing/PaymentSuccess';
 
 // Component to conditionally render Toaster based on notification settings
 const NotificationToaster = () => {
@@ -41,7 +42,8 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/checkout/:packageId" element={<Checkout />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
 
             {/* Protected Dashboard Routes */}
             <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

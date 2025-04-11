@@ -19,7 +19,7 @@
     "@heroicons/react": "^2.2.0",
     "@lottiefiles/dotlottie-react": "^0.13.3",
     "@remirror/pm": "^3.0.0",
-    "@stripe/react-stripe-js": "^3.4.0",
+    "@stripe/react-stripe-js": "^3.6.0",
     "@stripe/stripe-js": "^2.4.0",
     "@supabase/supabase-js": "^2.49.1",
     "@uiw/codemirror-extensions-basic-setup": "^4.23.10",
@@ -62,6 +62,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:webhook": "supabase functions deploy payment-webhook",
+    "deploy:checkout": "supabase functions deploy create-checkout-session --no-verify-jwt"
   }
 }

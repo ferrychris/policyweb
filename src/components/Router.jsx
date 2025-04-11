@@ -1,5 +1,16 @@
-import Checkout from './pricing/Checkout'; 
-import { Route } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Checkout from './pricing/Checkout';
+import PaymentSuccess from './pricing/PaymentSuccess';
 
-// Add the checkout route
-<Route path="/checkout" element={<Checkout />} /> 
+const AppRouter = () => {
+  return (
+    <Routes>
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
+      {/* Add other routes here */}
+    </Routes>
+  );
+};
+
+export default AppRouter; 
