@@ -1208,6 +1208,7 @@ const Policies = () => {
   const fetchSubscription = async () => {
     setIsLoadingSubscription(true);
     try {
+      // Use a simpler query without the join that's causing the error
       const { data, error } = await supabase
         .from('user_subscriptions')
         .select(`
@@ -1218,24 +1219,106 @@ const Policies = () => {
           current_period_end,
           cancel_at_period_end,
           stripe_subscription_id,
-          package_id,
-          packages:package_id (name, price_monthly, price_yearly)
+          package_id
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching subscription:', error);
-        toast.error('Failed to load subscription information');
+      // Handle table not existing yet (42P01 error)
+      if (error) {
+        if (error.code === '42P01') {
+          console.log('Subscription table does not exist yet, using default values');
+          // Set a default free subscription state
+          setSubscription({
+            id: null,
+            status: 'free',
+            billing_cycle: null,
+            current_period_start: null,
+            current_period_end: null,
+            cancel_at_period_end: false,
+            stripe_subscription_id: null,
+            package_id: null,
+            // Default package details for free tier
+            packages: {
+              name: 'Free Tier',
+              price_monthly: 0,
+              price_yearly: 0
+            }
+          });
+          return;
+        } else if (error.code !== 'PGRST116') {
+          // Only log errors other than "not found" (PGRST116)
+          console.error('Error fetching subscription:', error);
+          toast.error('Failed to load subscription information');
+        }
+        return;
       }
 
       if (data) {
+        // If we have a package_id, fetch the package details separately
+        if (data.package_id) {
+          try {
+            const { data: packageData, error: packageError } = await supabase
+              .from('packages')
+              .select('name, price_monthly, price_yearly')
+              .eq('id', data.package_id)
+              .single();
+
+            if (packageError) {
+              console.error('Error fetching package details:', packageError);
+            } else if (packageData) {
+              // Combine the data to match the original structure
+              data.packages = packageData;
+            }
+          } catch (packageFetchError) {
+            console.error('Failed to fetch package details:', packageFetchError);
+            // Set default package info if we can't fetch it
+            data.packages = {
+              name: 'Unknown Package',
+              price_monthly: 0,
+              price_yearly: 0
+            };
+          }
+        }
         setSubscription(data);
+      } else {
+        // No subscription found, set default free tier
+        setSubscription({
+          id: null,
+          status: 'free',
+          billing_cycle: null,
+          current_period_start: null,
+          current_period_end: null,
+          cancel_at_period_end: false,
+          stripe_subscription_id: null,
+          package_id: null,
+          packages: {
+            name: 'Free Tier',
+            price_monthly: 0,
+            price_yearly: 0
+          }
+        });
       }
     } catch (error) {
       console.error('Error in subscription fetch:', error);
+      // Set default state in case of error
+      setSubscription({
+        id: null,
+        status: 'free',
+        billing_cycle: null,
+        current_period_start: null,
+        current_period_end: null,
+        cancel_at_period_end: false,
+        stripe_subscription_id: null,
+        package_id: null,
+        packages: {
+          name: 'Free Tier',
+          price_monthly: 0,
+          price_yearly: 0
+        }
+      });
     } finally {
       setIsLoadingSubscription(false);
     }
@@ -1246,39 +1329,63 @@ const Policies = () => {
     try {
       // First get the team ID
       const { data: teamData, error: teamError } = await supabase
-        .from('teams')
+        .from('team_profiles')
         .select('id')
         .eq('owner_id', user.id)
         .single();
 
-      if (teamError && teamError.code !== 'PGRST116') {
-        console.error('Error fetching team:', teamError);
-        return;
+      // Handle table not existing yet (42P01 error)
+      if (teamError) {
+        if (teamError.code === '42P01') {
+          console.log('Team profiles table does not exist yet');
+          setTeamMembers([]);
+          setIsLoadingTeam(false);
+          return;
+        } else if (teamError.code !== 'PGRST116') {
+          console.error('Error fetching team:', teamError);
+          setIsLoadingTeam(false);
+          return;
+        }
       }
 
       if (teamData) {
         // Then get team members
-        const { data: membersData, error: membersError } = await supabase
-          .from('team_members')
-          .select(`
-            id,
-            role,
-            status,
-            invited_email,
-            user_id,
-            users:user_id (email, first_name, last_name)
-          `)
-          .eq('team_id', teamData.id);
+        try {
+          const { data: membersData, error: membersError } = await supabase
+            .from('team_members')
+            .select(`
+              id,
+              role,
+              status,
+              invited_email,
+              user_id,
+              users:user_id (email, first_name, last_name)
+            `)
+            .eq('team_id', teamData.id);
 
-        if (membersError) {
-          console.error('Error fetching team members:', membersError);
-          return;
+          // Handle team_members table not existing (42P01 error)
+          if (membersError) {
+            if (membersError.code === '42P01') {
+              console.log('Team members table does not exist yet');
+              setTeamMembers([]);
+            } else {
+              console.error('Error fetching team members:', membersError);
+            }
+            setIsLoadingTeam(false);
+            return;
+          }
+
+          setTeamMembers(membersData || []);
+        } catch (err) {
+          console.error('Error querying team members:', err);
+          setTeamMembers([]);
         }
-
-        setTeamMembers(membersData || []);
+      } else {
+        setTeamMembers([]);
       }
     } catch (error) {
       console.error('Error in team fetch:', error);
+      setTeamMembers([]);
     } finally {
       setIsLoadingTeam(false);
     }
@@ -1293,7 +1400,7 @@ const Policies = () => {
       });
 
       if (error) {
-        throw error;
+      throw error;
       }
 
       // Update local state without refetching
@@ -1353,24 +1460,47 @@ const Policies = () => {
       // First check if we have a team
       let teamId;
       const { data: teamData, error: teamError } = await supabase
-        .from('teams')
+        .from('team_profiles')
         .select('id')
         .eq('owner_id', user.id)
         .single();
 
+      // Handle table not existing error
+      if (teamError && teamError.code === '42P01') {
+        console.error('Team profiles table does not exist:', teamError);
+        toast.error('Team functionality is not available yet. Please try again later.');
+        setInviteStatus('idle');
+        return;
+      }
+
       if (teamError && teamError.code === 'PGRST116') {
         // No team exists, create one
-        const { data: newTeam, error: createError } = await supabase
-          .from('teams')
-          .insert({
-            owner_id: user.id,
-            name: `${user.user_metadata?.name || 'Team'}'s Team`
-          })
-          .select('id')
-          .single();
+        try {
+          const { data: newTeam, error: createError } = await supabase
+            .from('team_profiles')
+            .insert({
+              owner_id: user.id,
+              name: `${user.user_metadata?.name || 'Team'}'s Team`
+            })
+            .select('id')
+            .single();
 
-        if (createError) throw createError;
-        teamId = newTeam.id;
+          if (createError) {
+            if (createError.code === '42P01') {
+              console.error('Team profiles table does not exist:', createError);
+              toast.error('Team functionality is not available yet. Please try again later.');
+              setInviteStatus('idle');
+              return;
+            }
+            throw createError;
+          }
+          teamId = newTeam.id;
+        } catch (err) {
+          console.error('Error creating team:', err);
+          toast.error('Failed to create team. Please try again later.');
+          setInviteStatus('idle');
+          return;
+        }
       } else if (teamError) {
         throw teamError;
       } else {
@@ -1378,35 +1508,58 @@ const Policies = () => {
       }
 
       // Now invite the team member
-      const { error: inviteError } = await supabase
-        .from('team_members')
-        .insert({
-          team_id: teamId,
-          invited_email: newTeamMember.email,
-          role: newTeamMember.role,
-          status: 'invited'
-        });
+      try {
+        const { error: inviteError } = await supabase
+          .from('team_members')
+          .insert({
+            team_id: teamId,
+            invited_email: newTeamMember.email,
+            role: newTeamMember.role,
+            status: 'invited',
+            invite_token: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)
+          });
 
-      if (inviteError) throw inviteError;
-
-      // Send invitation email via Edge Function
-      const { error: emailError } = await supabase.functions.invoke('send-team-invitation', {
-        body: { 
-          teamId,
-          email: newTeamMember.email,
-          inviterName: user.user_metadata?.name || user.email
+        if (inviteError) {
+          if (inviteError.code === '42P01') {
+            console.error('Team members table does not exist:', inviteError);
+            toast.error('Team membership functionality is not available yet. Please try again later.');
+            setInviteStatus('idle');
+            return;
+          }
+          throw inviteError;
         }
-      });
 
-      if (emailError) {
-        console.error('Error sending invitation email:', emailError);
-        // We still continue as the DB record was created
+        // Skip Edge Function call if tables don't exist yet
+        if (teamId) {
+          // Send invitation email via Edge Function
+          try {
+            const { error: emailError } = await supabase.functions.invoke('send-team-invitation', {
+              body: { 
+                teamId,
+                email: newTeamMember.email,
+                inviterName: user.user_metadata?.name || user.email
+              }
+            });
+
+            if (emailError) {
+              console.error('Error sending invitation email:', emailError);
+              // We still continue as the DB record was created
+              toast.warning('Invitation created but email could not be sent. Please share the invitation link manually.');
+            }
+          } catch (emailErr) {
+            console.error('Failed to invoke send-team-invitation function:', emailErr);
+            toast.warning('Invitation created but email could not be sent. The user has been added to your team.');
+          }
+        }
+
+        // Refresh team members
+        fetchTeamMembers();
+        setNewTeamMember({ email: '', role: 'viewer' });
+        toast.success(`Invitation sent to ${newTeamMember.email}`);
+      } catch (err) {
+        console.error('Error inviting team member:', err);
+        toast.error('Failed to invite team member. Please try again.');
       }
-
-      // Refresh team members
-      fetchTeamMembers();
-      setNewTeamMember({ email: '', role: 'viewer' });
-      toast.success(`Invitation sent to ${newTeamMember.email}`);
     } catch (error) {
       console.error('Error inviting team member:', error);
       toast.error('Failed to invite team member. Please try again.');
@@ -1473,7 +1626,12 @@ const Policies = () => {
     });
   };
 
-  const handleSelectPricingTier = async (tierId, tierName, price) => {
+  // Create separate handlers for each pricing tier
+  const handleSelectFoundational = async () => {
+    const tierId = 1;
+    const tierName = 'Foundational Package';
+    const price = selectedBillingCycle === 'monthly' ? 900 : 720;
+    
     if (!user) {
       toast.error('Please sign in to subscribe');
       return;
@@ -1482,30 +1640,15 @@ const Policies = () => {
     setIsProcessingPayment(true);
     
     try {
-      // Get corresponding Stripe priceId
-      const stripePriceIds = {
-        1: { // Foundational Package
-          monthly: 'price_1OCn2xH2eZvKYlo2bQYoJCDF',
-          yearly: 'price_1OCn2xH2eZvKYlo2CbX9XsLu'
-        },
-        2: { // Operational Package
-          monthly: 'price_1OCn3SH2eZvKYlo2ZKrpoNtd',
-          yearly: 'price_1OCn3SH2eZvKYlo231Sd3XYZ'
-        },
-        3: { // Strategic Package
-          monthly: 'price_1OCn4AH2eZvKYlo22HZmRnXl',
-          yearly: 'price_1OCn4AH2eZvKYlo2RofPzDCJ'
-        }
-      };
-
-      const priceId = stripePriceIds[tierId]?.[selectedBillingCycle];
+      // Get Stripe priceId for Foundational package
+      const priceId = selectedBillingCycle === 'monthly' 
+        ? 'price_1OCn2xH2eZvKYlo2bQYoJCDF' 
+        : 'price_1OCn2xH2eZvKYlo2CbX9XsLu';
       
-      if (!priceId) {
-        throw new Error('Invalid pricing configuration');
-      }
-
-      // First try Supabase Edge Function
+      console.log('Creating checkout session for Foundational package');
+      
       try {
+        // Call the Supabase Edge Function
         const { data, error } = await supabase.functions.invoke('stripe-payment', {
           body: {
             priceId: priceId,
@@ -1515,62 +1658,142 @@ const Policies = () => {
             billingCycle: selectedBillingCycle
           }
         });
-
+        
         if (error) {
-          console.error('Supabase function error:', error);
+          console.error('Edge function error:', error);
           throw new Error(`Function error: ${error.message}`);
         }
         
         if (data?.url) {
           // Redirect to Stripe Checkout
+          console.log('Redirecting to Stripe Checkout:', data.url);
           window.location.href = data.url;
           return;
+        } else {
+          throw new Error('No checkout URL returned from function');
         }
       } catch (fnError) {
-        console.error('Edge function invocation failed, trying direct fetch:', fnError);
-        
-        // Try direct fetch to the function URL
-        try {
-          // Get the session token
-          const { data: sessionData } = await supabase.auth.getSession();
-          const accessToken = sessionData?.session?.access_token || '';
-          
-          const response = await fetch('https://vgedgxfxhiiilzqydfxu.supabase.co/functions/v1/stripe-payment', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
-            },
-            body: JSON.stringify({
-              priceId: priceId,
-              packageId: tierId,
-              packageName: tierName,
-              customerEmail: user.email,
-              billingCycle: selectedBillingCycle
-            })
-          });
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          
-          const responseData = await response.json();
-          
-          if (responseData?.url) {
-            window.location.href = responseData.url;
-            return;
-          }
-        } catch (fetchError) {
-          console.error('Direct fetch to edge function failed:', fetchError);
-        }
+        console.error('Edge function failed, falling back to checkout page:', fnError);
+        // Fallback to built-in checkout
+        navigate(`/checkout?tier=${tierId}&cycle=${selectedBillingCycle}&name=${encodeURIComponent(tierName)}`);
       }
-
-      // Fallback - Use the checkout page
-      navigate(`/checkout?tier=${tierId}&cycle=${selectedBillingCycle}&name=${encodeURIComponent(tierName)}`);
-      
     } catch (error) {
-      console.error('Error creating checkout session:', error);
-      toast.error(`Payment setup failed: ${error.message}`);
+      console.error('Failed to start checkout:', error);
+      toast.error('Unable to start checkout process. Please try again.');
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleSelectOperational = async () => {
+    const tierId = 2;
+    const tierName = 'Operational Package';
+    const price = selectedBillingCycle === 'monthly' ? 1500 : 1200;
+    
+    if (!user) {
+      toast.error('Please sign in to subscribe');
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    
+    try {
+      // Get Stripe priceId for Operational package
+      const priceId = selectedBillingCycle === 'monthly' 
+        ? 'price_1OCn3SH2eZvKYlo2ZKrpoNtd' 
+        : 'price_1OCn3SH2eZvKYlo231Sd3XYZ';
+      
+      console.log('Creating checkout session for Operational package');
+      
+      try {
+        // Call the Supabase Edge Function
+        const { data, error } = await supabase.functions.invoke('stripe-payment', {
+          body: {
+            priceId: priceId,
+            packageId: tierId,
+            packageName: tierName,
+            customerEmail: user.email,
+            billingCycle: selectedBillingCycle
+          }
+        });
+        
+        if (error) {
+          console.error('Edge function error:', error);
+          throw new Error(`Function error: ${error.message}`);
+        }
+        
+        if (data?.url) {
+          // Redirect to Stripe Checkout
+          console.log('Redirecting to Stripe Checkout:', data.url);
+          window.location.href = data.url;
+          return;
+        } else {
+          throw new Error('No checkout URL returned from function');
+        }
+      } catch (fnError) {
+        console.error('Edge function failed, falling back to checkout page:', fnError);
+        // Fallback to built-in checkout
+        navigate(`/checkout?tier=${tierId}&cycle=${selectedBillingCycle}&name=${encodeURIComponent(tierName)}`);
+      }
+    } catch (error) {
+      console.error('Failed to start checkout:', error);
+      toast.error('Unable to start checkout process. Please try again.');
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleSelectStrategic = async () => {
+    const tierId = 3;
+    const tierName = 'Strategic Package';
+    const price = selectedBillingCycle === 'monthly' ? 3000 : 2400;
+    
+    if (!user) {
+      toast.error('Please sign in to subscribe');
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    
+    try {
+      // Get Stripe priceId for Strategic package
+      const priceId = selectedBillingCycle === 'monthly' 
+        ? 'price_1OCn4AH2eZvKYlo22HZmRnXl' 
+        : 'price_1OCn4AH2eZvKYlo2RofPzDCJ';
+      
+      console.log('Creating checkout session for Strategic package');
+      
+      try {
+        // Call the Supabase Edge Function
+        const { data, error } = await supabase.functions.invoke('stripe-payment', {
+          body: {
+            priceId: priceId,
+            packageId: tierId,
+            packageName: tierName,
+            customerEmail: user.email,
+            billingCycle: selectedBillingCycle
+          }
+        });
+        
+        if (error) {
+          console.error('Edge function error:', error);
+          throw new Error(`Function error: ${error.message}`);
+        }
+        
+        if (data?.url) {
+          // Redirect to Stripe Checkout
+          console.log('Redirecting to Stripe Checkout:', data.url);
+          window.location.href = data.url;
+          return;
+        } else {
+          throw new Error('No checkout URL returned from function');
+        }
+      } catch (fnError) {
+        console.error('Edge function failed, falling back to checkout page:', fnError);
+        // Fallback to built-in checkout
+        navigate(`/checkout?tier=${tierId}&cycle=${selectedBillingCycle}&name=${encodeURIComponent(tierName)}`);
+      }
+    } catch (error) {
+      console.error('Failed to start checkout:', error);
+      toast.error('Unable to start checkout process. Please try again.');
       setIsProcessingPayment(false);
     }
   };
@@ -1612,6 +1835,19 @@ const Policies = () => {
     return tiers[requiredTierId] || "Upgrade";
   };
 
+  // Function to close the pricing modal and reset payment state
+  const handleClosePricingModal = () => {
+    setShowPricingModal(false);
+    setIsProcessingPayment(false);
+  };
+
+  // Add useEffect to reset isProcessingPayment when pricing modal is closed
+  useEffect(() => {
+    if (!showPricingModal) {
+      setIsProcessingPayment(false);
+    }
+  }, [showPricingModal]);
+
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
       <div className="flex justify-between items-center mb-6">
@@ -1651,8 +1887,8 @@ const Policies = () => {
             </>
           ) : (
             <>
-              <FaPlus className="mr-2 w-4 h-4" />
-              Generate Policy
+          <FaPlus className="mr-2 w-4 h-4" />
+          Generate Policy
             </>
           )}
         </button>
@@ -1695,8 +1931,8 @@ const Policies = () => {
                 </>
               ) : (
                 <>
-                  <FaPlus className="mr-2 w-4 h-4" />
-                  Create Your First Policy
+              <FaPlus className="mr-2 w-4 h-4" />
+              Create Your First Policy
                 </>
               )}
             </button>
@@ -1785,7 +2021,7 @@ const Policies = () => {
             <div
               className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75"
               aria-hidden="true"
-              onClick={() => !isProcessingPayment && setShowPricingModal(false)}
+              onClick={() => !isProcessingPayment && handleClosePricingModal()}
             />
 
             <div className="inline-block w-full max-w-6xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-[#13091F] rounded-xl shadow-xl sm:my-8 sm:align-middle sm:p-6">
@@ -1797,7 +2033,7 @@ const Policies = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => !isProcessingPayment && setShowPricingModal(false)}
+                  onClick={() => !isProcessingPayment && handleClosePricingModal()}
                   className="p-2 text-[#B4A5FF] hover:text-[#E2DDFF] transition-colors"
                   disabled={isProcessingPayment}
                 >
@@ -1883,7 +2119,7 @@ const Policies = () => {
                     </div>
                     
                     <button
-                      onClick={() => handleSelectPricingTier(1, 'Foundational Package', selectedBillingCycle === 'monthly' ? 900 : 720)}
+                      onClick={handleSelectFoundational}
                       disabled={isProcessingPayment}
                       className="mt-6 w-full py-2 bg-blue-500/20 hover:bg-blue-500/30 text-[#E2DDFF] rounded-lg transition-colors flex justify-center items-center disabled:opacity-50"
                     >
@@ -1946,7 +2182,7 @@ const Policies = () => {
                     </div>
                     
                     <button
-                      onClick={() => handleSelectPricingTier(2, 'Operational Package', selectedBillingCycle === 'monthly' ? 1500 : 1200)}
+                      onClick={handleSelectOperational}
                       disabled={isProcessingPayment}
                       className="mt-6 w-full py-2 bg-purple-500/20 hover:bg-purple-500/30 text-[#E2DDFF] rounded-lg transition-colors flex justify-center items-center disabled:opacity-50"
                     >
@@ -2002,7 +2238,7 @@ const Policies = () => {
                     </div>
                     
                     <button
-                      onClick={() => handleSelectPricingTier(3, 'Strategic Package', selectedBillingCycle === 'monthly' ? 3000 : 2400)}
+                      onClick={handleSelectStrategic}
                       disabled={isProcessingPayment}
                       className="mt-6 w-full py-2 bg-red-500/20 hover:bg-red-500/30 text-[#E2DDFF] rounded-lg transition-colors flex justify-center items-center disabled:opacity-50"
                     >
@@ -2010,6 +2246,17 @@ const Policies = () => {
                     </button>
                   </div>
                 </div>
+              </div>
+              
+              {/* Add cancel button at the bottom */}
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={handleClosePricingModal}
+                  disabled={isProcessingPayment}
+                  className="px-6 py-2 bg-[#2E1D4C]/50 text-[#B4A5FF] rounded-lg hover:bg-[#2E1D4C]/70 hover:text-[#E2DDFF] transition-colors disabled:opacity-50"
+                >
+                  {isProcessingPayment ? 'Processing...' : 'Cancel'}
+                </button>
               </div>
             </div>
           </div>
@@ -2066,8 +2313,8 @@ const Policies = () => {
                           <p className="mt-2 text-[#B4A5FF] font-medium text-center px-2">
                             Requires {requiredTierName} Package
                           </p>
-                          <button 
-                            onClick={(e) => {
+                  <button
+                    onClick={(e) => {
                               e.stopPropagation();
                               setShowPolicyTypeModal(false);
                               setRequiredTier(policyType.requiredTier);
@@ -2077,13 +2324,13 @@ const Policies = () => {
                           >
                             Upgrade
                           </button>
-                        </div>
+                      </div>
                       )}
                       
                       <div className="flex items-start justify-between">
                         <div className="rounded-lg p-2 bg-[#2E1D4C]/50">
                           {policyType.icon}
-                        </div>
+                    </div>
                         <div className="bg-[#2E1D4C]/30 px-2 py-1 rounded text-xs text-[#B4A5FF]">
                           {requiredTierName} Tier
                         </div>

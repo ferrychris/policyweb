@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -66,6 +67,10 @@ serve(async (req: Request) => {
 
     // Handle specific Stripe events
     switch (event.type) {
+      case 'checkout.session.completed':
+        await handleCheckoutSessionCompleted(event.data.object, supabaseAdmin);
+        break;
+
       case 'payment_intent.succeeded':
         await handlePaymentIntentSucceeded(event.data.object, supabaseAdmin);
         break;
@@ -99,6 +104,46 @@ serve(async (req: Request) => {
     });
   }
 });
+
+// Handler for completed checkout sessions
+async function handleCheckoutSessionCompleted(session: any, supabase: any) {
+  try {
+    console.log(`Checkout Session Completed: ${session.id}`);
+    
+    // Get user ID and package info from metadata
+    const { package_id, billing_cycle, supabase_user_id } = session.metadata;
+    const userId = supabase_user_id || session.client_reference_id;
+    
+    if (!userId) {
+      console.error('Missing user ID in checkout session');
+      return;
+    }
+
+    // For subscription mode checkouts, we'll receive a customer.subscription.created event later
+    // But we can update our database right away to show the subscription as processing
+    if (session.mode === 'subscription' && session.subscription) {
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .upsert({
+          user_id: userId,
+          package_id: package_id ? parseInt(package_id) : null,
+          status: 'active',
+          stripe_subscription_id: session.subscription,
+          billing_cycle: billing_cycle || 'monthly',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+
+      if (error) {
+        console.error('Error creating subscription record from checkout:', error);
+      } else {
+        console.log('Subscription record created from checkout');
+      }
+    }
+  } catch (error) {
+    console.error('Error processing checkout session completion:', error);
+  }
+}
 
 // Handler for successful payment intents
 async function handlePaymentIntentSucceeded(paymentIntent: any, supabase: any) {

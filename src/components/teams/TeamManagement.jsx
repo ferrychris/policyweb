@@ -10,31 +10,83 @@ import {
     FaCrown
 } from 'react-icons/fa';
 import { X } from 'lucide-react';
-import axios from 'axios';
+import { supabase } from '../../lib/supabaseClient';
 import SubscriptionGate from '../common/SubscriptionGate';
 import { FEATURES } from '../../hooks/useSubscription';
 
-export const TeamManagement = ({ organizationId, onClose }) => {
+export const TeamManagement = ({ onClose }) => {
     const [teamMembers, setTeamMembers] = useState([]);
     const [inviteEmail, setInviteEmail] = useState('');
-    const [role, setRole] = useState('member');
+    const [role, setRole] = useState('viewer');
     const [isLoading, setIsLoading] = useState(false);
     const [isFetchingMembers, setIsFetchingMembers] = useState(true);
     const [showInviteForm, setShowInviteForm] = useState(false);
+    const [teamId, setTeamId] = useState(null);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        if (organizationId) {
-            fetchTeamMembers();
-        }
-    }, [organizationId]);
+        const fetchUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUser(user);
+                fetchTeamMembers(user.id);
+            }
+        };
+        
+        fetchUser();
+    }, []);
 
-    const fetchTeamMembers = async () => {
+    const fetchTeamMembers = async (userId) => {
         setIsFetchingMembers(true);
         try {
-            const response = await axios.get(`/api/teams/${organizationId}/members`);
-            setTeamMembers(response.data.members || []);
+            // First get the team ID
+            const { data: teamData, error: teamError } = await supabase
+                .from('team_profiles')
+                .select('id, name')
+                .eq('owner_id', userId)
+                .single();
+
+            if (teamError && teamError.code !== 'PGRST116') {
+                console.error('Error fetching team:', teamError);
+                return;
+            }
+
+            if (teamData) {
+                setTeamId(teamData.id);
+                
+                // Then get team members
+                const { data: membersData, error: membersError } = await supabase
+                    .from('team_members')
+                    .select(`
+                        id,
+                        role,
+                        status,
+                        invited_email,
+                        user_id,
+                        users:user_id (email, first_name, last_name)
+                    `)
+                    .eq('team_id', teamData.id);
+
+                if (membersError) {
+                    console.error('Error fetching team members:', membersError);
+                    return;
+                }
+
+                // Transform data to match the component expectations
+                const formattedMembers = membersData.map(member => ({
+                    id: member.id,
+                    email: member.invited_email || (member.users?.email || ''),
+                    name: member.users ? `${member.users.first_name || ''} ${member.users.last_name || ''}`.trim() : 'Invited User',
+                    role: member.role,
+                    status: member.status
+                }));
+
+                setTeamMembers(formattedMembers || []);
+            } else {
+                setTeamMembers([]);
+            }
         } catch (error) {
-            console.error('Error fetching team members:', error);
+            console.error('Error in team fetch:', error);
             toast.error('Failed to load team members');
             setTeamMembers([]);
         } finally {
@@ -47,17 +99,52 @@ export const TeamManagement = ({ organizationId, onClose }) => {
         setIsLoading(true);
 
         try {
-            await axios.post(`/api/teams/${organizationId}/invite`, {
-                email: inviteEmail,
-                role: role,
-                invitedBy: userId
+            if (!teamId) {
+                // Create a new team if it doesn't exist
+                const { data: newTeam, error: createError } = await supabase
+                    .from('team_profiles')
+                    .insert({
+                        owner_id: user.id,
+                        name: `${user.user_metadata?.name || 'Team'}'s Team`
+                    })
+                    .select('id')
+                    .single();
+
+                if (createError) throw createError;
+                setTeamId(newTeam.id);
+            }
+
+            // Now invite the team member
+            const { error: inviteError } = await supabase
+                .from('team_members')
+                .insert({
+                    team_id: teamId,
+                    invited_email: inviteEmail,
+                    role: role,
+                    status: 'invited'
+                });
+
+            if (inviteError) throw inviteError;
+
+            // Send invitation email via Edge Function
+            const { error: emailError } = await supabase.functions.invoke('send-team-invitation', {
+                body: { 
+                    teamId,
+                    email: inviteEmail,
+                    inviterName: user.user_metadata?.name || user.email
+                }
             });
+
+            if (emailError) {
+                console.error('Error sending invitation email:', emailError);
+                // We still continue as the DB record was created
+            }
 
             toast.success('Invitation sent successfully');
             setInviteEmail('');
-            setRole('member');
+            setRole('viewer');
             setShowInviteForm(false);
-            await fetchTeamMembers(); // Refresh the list
+            fetchTeamMembers(user.id); // Refresh the list
         } catch (error) {
             console.error('Error sending invitation:', error);
             toast.error('Failed to send invitation');
@@ -70,9 +157,16 @@ export const TeamManagement = ({ organizationId, onClose }) => {
         if (!confirm('Are you sure you want to remove this team member?')) return;
 
         try {
-            await axios.delete(`/api/teams/${organizationId}/members/${memberId}`);
+            const { error } = await supabase
+                .from('team_members')
+                .delete()
+                .eq('id', memberId);
+
+            if (error) throw error;
+
             toast.success('Team member removed successfully');
-            await fetchTeamMembers(); // Refresh the list
+            // Update the local state
+            setTeamMembers(prev => prev.filter(member => member.id !== memberId));
         } catch (error) {
             console.error('Error removing team member:', error);
             toast.error('Failed to remove team member');
@@ -81,11 +175,18 @@ export const TeamManagement = ({ organizationId, onClose }) => {
 
     const handleRoleChange = async (memberId, newRole) => {
         try {
-            await axios.patch(`/api/teams/${organizationId}/members/${memberId}`, {
-                role: newRole
-            });
+            const { error } = await supabase
+                .from('team_members')
+                .update({ role: newRole })
+                .eq('id', memberId);
+
+            if (error) throw error;
+
+            // Update the local state
+            setTeamMembers(prev => prev.map(member => 
+                member.id === memberId ? { ...member, role: newRole } : member
+            ));
             toast.success('Role updated successfully');
-            await fetchTeamMembers(); // Refresh the list
         } catch (error) {
             console.error('Error updating role:', error);
             toast.error('Failed to update role');
@@ -105,6 +206,17 @@ export const TeamManagement = ({ organizationId, onClose }) => {
                             <X className="h-6 w-6 text-gray-400" />
                         </button>
                     )}
+                </div>
+
+                {/* Add Invite Button */}
+                <div className="mb-6">
+                    <button
+                        onClick={() => setShowInviteForm(true)}
+                        className="flex items-center px-4 py-2 bg-[#B4A5FF]/20 text-[#E2DDFF] rounded-lg hover:bg-[#B4A5FF]/30 transition-colors"
+                    >
+                        <FaUserPlus className="mr-2" />
+                        Invite Member
+                    </button>
                 </div>
 
                 {/* Invite Form Modal */}
@@ -134,9 +246,9 @@ export const TeamManagement = ({ organizationId, onClose }) => {
                                         onChange={(e) => setRole(e.target.value)}
                                         className="w-full px-4 py-2 bg-[#2E1D4C]/30 border border-[#B4A5FF]/20 rounded-lg text-[#E2DDFF] focus:outline-none focus:border-[#B4A5FF]"
                                     >
+                                        <option value="viewer">Viewer</option>
                                         <option value="member">Member</option>
                                         <option value="admin">Admin</option>
-                                        <option value="viewer">Viewer</option>
                                     </select>
                                 </div>
                                 <div className="flex justify-end gap-4 mt-6">
@@ -195,6 +307,9 @@ export const TeamManagement = ({ organizationId, onClose }) => {
                                     <div>
                                         <h4 className="text-[#E2DDFF] font-medium">{member.name}</h4>
                                         <p className="text-[#B4A5FF] text-sm">{member.email}</p>
+                                        {member.status === 'invited' && (
+                                            <span className="text-yellow-400 text-xs">Invited - Pending</span>
+                                        )}
                                     </div>
                                     {member.role === 'owner' && (
                                         <FaCrown className="ml-2 text-yellow-500" title="Owner" />
@@ -208,9 +323,9 @@ export const TeamManagement = ({ organizationId, onClose }) => {
                                                 onChange={(e) => handleRoleChange(member.id, e.target.value)}
                                                 className="px-3 py-1 bg-[#2E1D4C]/50 border border-[#B4A5FF]/20 rounded-lg text-[#E2DDFF] focus:outline-none focus:border-[#B4A5FF]"
                                             >
+                                                <option value="viewer">Viewer</option>
                                                 <option value="member">Member</option>
                                                 <option value="admin">Admin</option>
-                                                <option value="viewer">Viewer</option>
                                             </select>
                                             <button
                                                 onClick={() => handleRemoveMember(member.id)}

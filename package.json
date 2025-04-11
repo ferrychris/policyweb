@@ -64,6 +64,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy:webhook": "supabase functions deploy payment-webhook",
-    "deploy:checkout": "supabase functions deploy create-checkout-session --no-verify-jwt"
+    "deploy:checkout": "supabase functions deploy create-checkout-session --no-verify-jwt",
+    "deploy:stripe-payment": "supabase functions deploy stripe-payment --no-verify-jwt",
+    "deploy:stripe-webhook": "supabase functions deploy stripe-webhook --no-verify-jwt"
   }
 }

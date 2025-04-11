@@ -54,14 +54,17 @@ export default async function handler(req, res) {
 
         // Save subscription details to Supabase
         await supabase
-            .from('subscriptions')
+            .from('user_subscriptions')
             .insert({
                 user_id: user.id,
                 stripe_subscription_id: subscription.id,
                 stripe_customer_id: stripeCustomerId,
                 status: subscription.status,
                 price_id: priceId,
+                package_id: req.body.packageId,
+                billing_cycle: req.body.billingCycle || 'monthly',
                 current_period_end: new Date(subscription.current_period_end * 1000),
+                current_period_start: new Date(subscription.current_period_start * 1000),
             });
 
         return res.status(200).json({

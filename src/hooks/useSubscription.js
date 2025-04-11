@@ -5,34 +5,72 @@ export const useSubscription = () => {
     const [subscription, setSubscription] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [user, setUser] = useState(null);
 
+    // Get the current user
     useEffect(() => {
-        fetchSubscription();
+        const getUserSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                setUser(session.user);
+            }
+        };
+
+        getUserSession();
+        
+        // Set up auth listener
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                if (session) {
+                    setUser(session.user);
+                } else {
+                    setUser(null);
+                    setSubscription(null);
+                }
+            }
+        );
+
+        return () => {
+            if (authListener) authListener.subscription.unsubscribe();
+        };
     }, []);
+
+    // Fetch subscription when user changes
+    useEffect(() => {
+        if (user) {
+            fetchSubscription();
+        } else {
+            setSubscription(null);
+            setLoading(false);
+        }
+    }, [user]);
 
     const fetchSubscription = async () => {
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            if (!user) {
                 setSubscription(null);
+                setLoading(false);
                 return;
             }
 
             const { data: subscriptionData, error: subscriptionError } = await supabase
-                .from('subscriptions')
+                .from('user_subscriptions')
                 .select(`
                     *,
                     packages (*)
                 `)
-                .eq('user_id', session.user.id)
+                .eq('user_id', user.id)
                 .single();
 
-            if (subscriptionError) throw subscriptionError;
+            if (subscriptionError && subscriptionError.code !== 'PGRST116') {
+                throw subscriptionError;
+            }
 
-            setSubscription(subscriptionData);
+            setSubscription(subscriptionData || null);
         } catch (err) {
             console.error('Error fetching subscription:', err);
             setError(err.message);
+            setSubscription(null);
         } finally {
             setLoading(false);
         }
